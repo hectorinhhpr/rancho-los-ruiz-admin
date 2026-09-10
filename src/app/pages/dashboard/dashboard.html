@@ -1,1 +1,35 @@
-<p>dashboard works!</p>
+<div class="flex min-h-screen bg-stone-100">
+  <!-- Aquí mandamos llamar al componente del menú lateral que acabas de hacer -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Área principal de contenido (Aquí irá el calendario y las tablas después) -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    
+    <header class="mb-8 flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+      <div>
+        <h1 class="text-3xl font-bold text-stone-800">Vista General</h1>
+        <p class="text-stone-500 mt-1">Bienvenido al sistema administrativo.</p>
+      </div>
+      <div class="text-sm font-medium text-stone-600 bg-stone-100 px-4 py-2 rounded-full">
+        Administrador
+      </div>
+    </header>
+
+    <!-- Cascarones de las tarjetas de métricas (Placeholder) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-600">
+        <h3 class="text-stone-500 text-sm font-semibold">Reservaciones Activas</h3>
+        <p class="text-3xl font-bold text-stone-800 mt-2">--</p>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-600">
+        <h3 class="text-stone-500 text-sm font-semibold">Clientes Registrados</h3>
+        <p class="text-3xl font-bold text-stone-800 mt-2">--</p>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-stone-800">
+        <h3 class="text-stone-500 text-sm font-semibold">Ingresos del Mes</h3>
+        <p class="text-3xl font-bold text-stone-800 mt-2">$ --</p>
+      </div>
+    </div>
+
+  </main>
+</div>

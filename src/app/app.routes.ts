@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth-guard';
+// import { authGuard } from './guards/auth-guard'; // Lo comentamos hasta que Karime suba este archivo
 
 export const routes: Routes = [
   {
@@ -9,22 +9,22 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
+    loadComponent: () => import('./pages/login/login').then(m => m.LoginComponent)
   },
   {
     path: 'dashboard',
-    loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [authGuard]
+    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.DashboardComponent),
+    // canActivate: [authGuard] 
   },
   {
     path: 'clientes',
-    loadComponent: () => import('./pages/clientes/clientes.component').then(m => m.ClientesComponent),
-    canActivate: [authGuard]
+    loadComponent: () => import('./pages/clientes/clientes').then(m => m.Clientes),
+    // canActivate: [authGuard]
   },
   {
     path: 'reservaciones',
-    loadComponent: () => import('./pages/reservaciones/reservaciones.component').then(m => m.ReservacionesComponent),
-    canActivate: [authGuard]
+    loadComponent: () => import('./pages/reservaciones/reservaciones').then(m => m.Reservaciones),
+    // canActivate: [authGuard]
   },
   {
     path: '**',

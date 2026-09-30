@@ -7,21 +7,36 @@
 
   <!-- Enlaces de Navegación -->
   <nav class="flex-1 px-4 py-6 space-y-2">
-    <a href="#" class="flex items-center px-4 py-3 bg-green-700 text-white rounded-lg shadow-md transition">
-      <span class="font-medium">Inicio / Calendario</span>
+    
+    <!-- Dashboard / Inicio -->
+    <a 
+      routerLink="/dashboard" 
+      routerLinkActive="bg-green-700 text-white shadow-md" 
+      class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer">
+      <span class="font-medium">Dashboard</span>
+    </a>
+
+    <!-- Punto de Venta (POS) -->
+    <a 
+      routerLink="/pos" 
+      routerLinkActive="bg-green-700 text-white shadow-md" 
+      class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer">
+      <span class="font-medium">Punto de Venta (POS)</span>
     </a>
     
-    <a href="#" class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition">
-      <span class="font-medium">Reservaciones</span>
-    </a>
-    
-    <a href="#" class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition">
+    <!-- Directorio de Clientes -->
+    <a 
+      routerLink="/clientes" 
+      routerLinkActive="bg-green-700 text-white shadow-md" 
+      class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer">
       <span class="font-medium">Directorio de Clientes</span>
     </a>
 
-    <a href="#" class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition">
-      <span class="font-medium">Reportes Operativos</span>
-    </a>
+    <!-- Reservaciones (Pausado temporalmente) -->
+    <div class="flex items-center px-4 py-3 mt-4 border border-dashed border-stone-700 rounded-lg opacity-50 select-none">
+      <span class="font-medium text-sm">Reservaciones (Pausado)</span>
+    </div>
+
   </nav>
 
   <!-- Botón de Salida -->

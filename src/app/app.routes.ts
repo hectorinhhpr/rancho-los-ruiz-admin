@@ -26,6 +26,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/reservaciones/reservaciones').then(m => m.Reservaciones),
     // canActivate: [authGuard]
   },
+  
+  // 👇 AQUÍ AGREGAMOS LA NUEVA RUTA DEL PUNTO DE VENTA 👇
+  { 
+    path: 'pos', 
+    loadComponent: () => import('./pages/pos/pos').then(m => m.PosComponent), 
+  },
+
   {
     path: '**',
     redirectTo: 'login'

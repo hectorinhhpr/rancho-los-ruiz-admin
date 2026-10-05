@@ -51,6 +51,34 @@ export class PosComponent {
     this.ticket = [];
     this.calcularTotales();
   }
+
+// ... tu código anterior (limpiarTicket, etc)
+
+  // 1. Arreglo para guardar las cuentas en espera
+  ticketsPausados: ItemTicket[][] = [];
+
+  // 2. Función para mandar un ticket a "Pausado"
+  pausarTicket() {
+    if (this.ticket.length > 0) {
+      // Usamos [...this.ticket] para hacer una copia exacta de la cuenta actual
+      this.ticketsPausados.push([...this.ticket]); 
+      // Limpiamos la pantalla para atender al siguiente cliente
+      this.limpiarTicket();
+    }
+  }
+
+  // 3. Función para regresar un ticket pausado a la pantalla principal
+  recuperarTicket(index: number) {
+    if (this.ticket.length > 0) {
+      alert('⚠️ Por favor cobra o cancela la orden actual antes de recuperar una pausada.');
+      return;
+    }
+    // Restauramos el ticket a la pantalla y lo borramos de la lista de pausas
+    this.ticket = this.ticketsPausados[index];
+    this.ticketsPausados.splice(index, 1);
+    this.calcularTotales();
+  }
+
   // Función para el Lector de Códigos de Barras
   buscarProducto(codigo: string) {
     // Buscamos si el código escaneado coincide con algún ID de nuestro inventario

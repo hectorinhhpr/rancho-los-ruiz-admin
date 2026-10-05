@@ -1,35 +1,77 @@
-<div class="flex min-h-screen bg-stone-100">
-  <!-- Aquí mandamos llamar al componente del menú lateral que acabas de hacer -->
-  <app-sidebar></app-sidebar>
-
-  <!-- Área principal de contenido (Aquí irá el calendario y las tablas después) -->
-  <main class="flex-1 p-8 overflow-y-auto">
+<div class="min-h-screen bg-stone-50 font-sans flex flex-col">
+  
+  <!-- Barra Superior (Topbar) -->
+  <header class="bg-white border-b border-stone-200 px-8 py-4 flex justify-between items-center shadow-sm w-full">
     
-    <header class="mb-8 flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-      <div>
-        <h1 class="text-3xl font-bold text-stone-800">Vista General</h1>
-        <p class="text-stone-500 mt-1">Bienvenido al sistema administrativo.</p>
+    <!-- Izquierda: Logo y Nombre de la Empresa -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-green-700 text-white rounded-lg flex items-center justify-center font-bold text-xl shadow-inner">
+        LR
       </div>
-      <div class="text-sm font-medium text-stone-600 bg-stone-100 px-4 py-2 rounded-full">
-        Administrador
-      </div>
-    </header>
+      <span class="text-stone-800 font-extrabold text-xl tracking-tight hidden sm:block">Rancho los Ruiz</span>
+    </div>
+    
+    <!-- Derecha: Búsqueda, Notificaciones y Usuario -->
+    <div class="flex items-center gap-5 sm:gap-7">
+      
+      <!-- Icono de Búsqueda -->
+      <button class="text-stone-400 hover:text-green-700 transition cursor-pointer">
+        🔍
+      </button>
 
-    <!-- Cascarones de las tarjetas de métricas (Placeholder) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-600">
-        <h3 class="text-stone-500 text-sm font-semibold">Reservaciones Activas</h3>
-        <p class="text-3xl font-bold text-stone-800 mt-2">--</p>
+      <!-- Icono de Notificaciones con Alerta -->
+      <button class="relative text-stone-400 hover:text-green-700 transition text-xl cursor-pointer">
+        🔔
+        <!-- Puntito rojo animado de Tailwind -->
+        <span class="absolute -top-1 -right-1 flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
+        </span>
+      </button>
+
+      <!-- Separador visual -->
+      <div class="h-8 w-px bg-stone-200 hidden sm:block"></div>
+
+      <!-- Perfil de Usuario -->
+      <div class="flex items-center gap-3 cursor-pointer group">
+        <div class="text-right hidden sm:block">
+          <p class="text-sm font-bold text-stone-800 group-hover:text-green-700 transition">Héctor Pacheco</p>
+          <p class="text-xs text-stone-500 font-medium">Administrador</p>
+        </div>
+        <!-- Avatar con iniciales -->
+        <div class="w-10 h-10 rounded-full bg-green-100 border-2 border-green-600 flex items-center justify-center text-green-800 font-bold shadow-sm group-hover:bg-green-200 transition">
+          HP
+        </div>
       </div>
-      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-600">
-        <h3 class="text-stone-500 text-sm font-semibold">Clientes Registrados</h3>
-        <p class="text-3xl font-bold text-stone-800 mt-2">--</p>
-      </div>
-      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-stone-800">
-        <h3 class="text-stone-500 text-sm font-semibold">Ingresos del Mes</h3>
-        <p class="text-3xl font-bold text-stone-800 mt-2">$ --</p>
-      </div>
+
+    </div>
+  </header>
+
+  <!-- Contenedor Principal (Donde están las Apps) -->
+  <div class="flex-1 p-10 flex flex-col items-center">
+    
+    <!-- Banner de Bienvenida -->
+    <div class="bg-amber-50 text-amber-800 px-6 py-3 rounded-lg text-sm font-medium mb-12 shadow-sm border border-amber-200 flex items-center gap-2">
+      <span class="text-lg">👋</span> Bienvenido al sistema central. Selecciona un módulo para comenzar.
     </div>
 
-  </main>
+    <!-- Cuadrícula de Aplicaciones -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-10 max-w-5xl w-full">
+      
+      @for (modulo of modulos; track modulo.nombre) {
+        <a [routerLink]="modulo.ruta" class="flex flex-col items-center group cursor-pointer outline-none">
+          <div class="w-24 h-24 rounded-2xl shadow-sm flex items-center justify-center bg-white group-hover:shadow-md group-hover:-translate-y-1 transition-all duration-300 border border-stone-100">
+            <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl {{modulo.colorFondo}} {{modulo.colorTexto}}">
+              {{modulo.icono}}
+            </div>
+          </div>
+          <span class="mt-3 text-sm font-medium text-stone-700 group-hover:text-stone-900 text-center leading-tight">
+            {{modulo.nombre}}
+          </span>
+        </a>
+      }
+
+    </div>
+  </div>
+  
 </div>

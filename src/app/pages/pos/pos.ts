@@ -86,7 +86,7 @@ export class PosComponent {
 
   // --- CONEXIÓN CON SUPABASE (KARIME) ---
 
-  // Lector de Códigos de Barras conectado a la BD real
+  /*// Lector de Códigos de Barras conectado a la BD real
   async buscarProducto(codigo: string) {
     if (!codigo || codigo.trim() === '') return;
 
@@ -104,8 +104,35 @@ export class PosComponent {
         alert('⚠️ Producto no encontrado en la base de datos de Supabase.');
       }
     }
-  }
+  }*/
+// Lector de Códigos de Barras conectado a la BD real
+  async buscarProducto(codigo: string) {
+    if (!codigo || codigo.trim() === '') return;
 
+    // 1. Buscamos el código en Supabase
+    const productoBD: any = await this.productoService.getProductoByCodigo(codigo);
+    
+    if (productoBD) {
+      // 2. Mapeamos los datos de Karime a las variables de tu interfaz
+      const productoAdaptado = {
+        id: productoBD.id,
+        nombre: productoBD.nombre,
+        categoria: 'Restaurante', // Ponemos uno por defecto porque Karime no tiene esta columna
+        precio: Number(productoBD.precio_venta), // ¡LA CLAVE! Traducimos su columna a tu variable
+        icono: '🍔' // Icono por defecto
+      };
+      
+      this.agregarAlTicket(productoAdaptado as any);
+    } else {
+      // 3. Plan B: Buscar en los botones locales si falla la BD
+      const productoMock = this.productos.find(p => p.id === codigo);
+      if (productoMock) {
+        this.agregarAlTicket(productoMock);
+      } else {
+        alert('⚠️ Producto no encontrado. Pídele a Karime que revise las políticas RLS (SELECT) en la tabla de productos.');
+      }
+    }
+  }
   // ¡NUEVO! Función para registrar la venta en la nube
   async cobrarTicket() {
     if (this.ticket.length === 0) {

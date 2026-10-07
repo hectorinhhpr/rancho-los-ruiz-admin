@@ -1,16 +1,12 @@
 <div class="flex h-screen bg-stone-100 font-sans print:bg-white">
   
-  <!-- PANEL IZQUIERDO: Buscador y Productos (Se oculta al imprimir el ticket) -->
+  <!-- PANEL IZQUIERDO: Buscador y Productos -->
   <div class="flex-1 flex flex-col h-full print:hidden">
     
-    <!-- Barra superior con buscador para Lector de Código de Barras -->
+    <!-- Barra superior con buscador -->
     <div class="p-4 bg-white shadow-sm flex gap-4 items-center border-b border-stone-200">
       <div class="w-full relative">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-stone-400">
-          🔍
-        </span>
-        <!-- El atributo 'autofocus' asegura que el lector de códigos escriba aquí automáticamente -->
-        <!-- Buscador / Lector de Códigos -->
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-stone-400">🔍</span>
         <input 
           #codigoInput
           (keyup.enter)="buscarProducto(codigoInput.value); codigoInput.value = ''"
@@ -27,7 +23,6 @@
 
     <!-- Cuadrícula de Productos -->
     <div class="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto">
-      
       @for (producto of productos; track producto.id) {
         <div (click)="agregarAlTicket(producto)" class="bg-white p-4 rounded-xl shadow-sm border border-stone-200 cursor-pointer hover:shadow-md hover:border-green-500 transition">
           <div class="h-24 bg-stone-100 rounded-lg mb-3 flex items-center justify-center text-4xl">{{ producto.icono }}</div>
@@ -36,11 +31,10 @@
           <p class="text-green-700 font-bold text-lg">{{ producto.precio | currency:'MXN' }}</p>
         </div>
       }
-
     </div>
   </div>
 
-  <!-- PANEL DERECHO: Ticket de Venta (Este será el único elemento visible en la impresora térmica) -->
+  <!-- PANEL DERECHO: Ticket de Venta -->
   <div class="w-96 bg-white border-l border-stone-200 flex flex-col h-full print:w-full print:border-none print:h-auto print:m-0 print:p-0">
     
     <!-- Encabezado del Ticket -->
@@ -86,7 +80,7 @@
         <p>{{ total | currency:'MXN' }}</p>
       </div>
 
-<!-- Alerta de Órdenes Pausadas (Solo aparece si hay tickets guardados) -->
+      <!-- Alerta de Órdenes Pausadas -->
       @if (ticketsPausados.length > 0) {
         <div class="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg print:hidden">
           <p class="text-xs font-bold text-orange-800 mb-2">ÓRDENES EN ESPERA:</p>
@@ -100,8 +94,8 @@
         </div>
       }
 
-      <!-- Botones de Acción (Se ocultan al imprimir) -->
-      <button onclick="window.print()" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-4 rounded-xl shadow-lg transition text-lg print:hidden">
+      <!-- 👇 AQUÍ ESTÁ LA CORRECCIÓN: Botón conectado a cobrarTicket() 👇 -->
+      <button (click)="cobrarTicket()" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-4 rounded-xl shadow-lg transition text-lg print:hidden">
         Cobrar e Imprimir Ticket
       </button>
       

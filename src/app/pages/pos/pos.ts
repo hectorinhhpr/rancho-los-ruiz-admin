@@ -38,21 +38,31 @@ export class PosComponent {
   total: number = 0;
 
   // 4. Función para cuando haces clic en un producto
+  // 4. Función para cuando haces clic en un producto
   agregarAlTicket(producto: Producto) {
+    const precioNumerico = Number(producto.precio) || 0;
     const itemExistente = this.ticket.find(item => item.producto.id === producto.id);
-    
+
     if (itemExistente) {
-      itemExistente.cantidad++; // Si ya está en el ticket, sumamos 1 a la cantidad
-      itemExistente.importe = itemExistente.cantidad * itemExistente.producto.precio;
+      itemExistente.cantidad++;
+      itemExistente.importe = itemExistente.cantidad * (Number(itemExistente.producto.precio) || precioNumerico);
     } else {
-      this.ticket.push({ producto, cantidad: 1, importe: producto.precio }); // Si es nuevo, lo agregamos
+      this.ticket.push({
+        producto: { ...producto, precio: precioNumerico },
+        cantidad: 1,
+        importe: precioNumerico
+      });
     }
     this.calcularTotales();
   }
 
   // 5. Matemáticas automáticas
   calcularTotales() {
-    this.subtotal = this.ticket.reduce((suma, item) => suma + item.importe, 0);
+    this.subtotal = this.ticket.reduce((suma, item) => {
+      const precio = Number(item.producto?.precio) || Number(item.importe) || 0;
+      const cantidad = Number(item.cantidad) || 1;
+      return suma + (precio * cantidad);
+    }, 0);
     this.iva = this.subtotal * 0.16; // Calculamos el 16% de IVA
     this.total = this.subtotal + this.iva;
   }

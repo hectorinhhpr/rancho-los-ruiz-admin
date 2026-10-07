@@ -1,1 +1,13 @@
-<router-outlet></router-outlet>
+<div class="flex h-screen bg-stone-100 overflow-hidden">
+  
+  <!-- Magia aquí: Solo mostramos el menú si NO estamos en login, dashboard o la raíz -->
+  @if (router.url !== '/login' && router.url !== '/dashboard' && router.url !== '/') {
+    <app-sidebar></app-sidebar>
+  }
+  
+  <!-- Contenedor Principal (Dashboard, POS, Clientes, etc.) -->
+  <main class="flex-1 h-full overflow-y-auto">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

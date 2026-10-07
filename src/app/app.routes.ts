@@ -13,8 +13,8 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.DashboardComponent),
-    canActivate: [authGuard] 
+    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard),
+    // canActivate: [authGuard] 
   },
   {
     path: 'clientes',

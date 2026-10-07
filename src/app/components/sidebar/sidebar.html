@@ -1,48 +1,35 @@
-<aside class="bg-stone-900 text-stone-300 w-64 min-h-screen flex flex-col shadow-2xl transition-all duration-300">
-  <!-- Logo / Encabezado -->
-  <div class="p-6 border-b border-stone-700">
-    <h2 class="text-2xl font-bold text-white tracking-wider">Los Ruiz</h2>
-    <p class="text-xs text-stone-400 mt-1">Panel Administrativo</p>
+<aside [class.w-64]="!colapsado" [class.w-20]="colapsado" class="bg-stone-900 text-stone-300 min-h-screen flex flex-col shadow-2xl transition-all duration-300 relative">
+  
+  <!-- Botón Hamburguesa Flotante -->
+  <button (click)="toggleMenu()" class="absolute -right-4 top-6 bg-green-700 hover:bg-green-600 text-white w-8 h-8 rounded-full shadow-lg z-50 flex items-center justify-center transition">
+    ☰
+  </button>
+
+  <!-- Logo -->
+  <div class="p-6 border-b border-stone-700 overflow-hidden whitespace-nowrap">
+    @if (!colapsado) {
+      <h2 class="text-2xl font-bold text-white tracking-wider">Los Ruiz</h2>
+      <p class="text-xs text-stone-400 mt-1">Panel Administrativo</p>
+    } @else {
+      <h2 class="text-xl font-bold text-white text-center">LR</h2>
+    }
   </div>
 
-  <!-- Enlaces de Navegación -->
-  <nav class="flex-1 px-4 py-6 space-y-2">
-    
-    <!-- Dashboard / Inicio -->
-    <a 
-      routerLink="/dashboard" 
-      routerLinkActive="bg-green-700 text-white shadow-md" 
-      class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer">
-      <span class="font-medium">Dashboard</span>
+  <!-- Navegación -->
+  <nav class="flex-1 px-3 py-6 space-y-2 overflow-hidden">
+    <a routerLink="/dashboard" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
+      <span class="text-xl">📊</span>
+      @if (!colapsado) { <span class="font-medium">Dashboard</span> }
     </a>
 
-    <!-- Punto de Venta (POS) -->
-    <a 
-      routerLink="/pos" 
-      routerLinkActive="bg-green-700 text-white shadow-md" 
-      class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer">
-      <span class="font-medium">Punto de Venta (POS)</span>
+    <a routerLink="/pos" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
+      <span class="text-xl">🛒</span>
+      @if (!colapsado) { <span class="font-medium">Punto de Venta</span> }
     </a>
     
-    <!-- Directorio de Clientes -->
-    <a 
-      routerLink="/clientes" 
-      routerLinkActive="bg-green-700 text-white shadow-md" 
-      class="flex items-center px-4 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer">
-      <span class="font-medium">Directorio de Clientes</span>
+    <a routerLink="/clientes" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
+      <span class="text-xl">👥</span>
+      @if (!colapsado) { <span class="font-medium">Clientes</span> }
     </a>
-
-    <!-- Reservaciones (Pausado temporalmente) -->
-    <div class="flex items-center px-4 py-3 mt-4 border border-dashed border-stone-700 rounded-lg opacity-50 select-none">
-      <span class="font-medium text-sm">Reservaciones (Pausado)</span>
-    </div>
-
   </nav>
-
-  <!-- Botón de Salida -->
-  <div class="p-4 border-t border-stone-700">
-    <button class="w-full flex items-center justify-center px-4 py-2 text-sm font-semibold text-red-400 border border-red-400 rounded-lg hover:bg-red-400 hover:text-stone-900 transition">
-      Cerrar Sesión
-    </button>
-  </div>
 </aside>

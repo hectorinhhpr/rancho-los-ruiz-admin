@@ -24,4 +24,16 @@ export class ProductoService {
 
     return data;
   }
+  // ¡NUEVO! Método para traer todos los productos y pintar los botones en el POS
+  async getProductos(): Promise<any[] | null> {
+    const { data, error } = await this.supabaseService.client
+      .from('productos')
+      .select('*');
+
+    if (error) {
+      console.error('Error al descargar el catálogo:', error.message);
+      return null;
+    }
+    return data;
+  }
 }

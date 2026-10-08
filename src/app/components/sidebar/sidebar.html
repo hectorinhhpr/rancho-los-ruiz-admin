@@ -1,4 +1,4 @@
-<aside [class.w-64]="!colapsado" [class.w-20]="colapsado" class="bg-stone-900 text-stone-300 min-h-screen flex flex-col shadow-2xl transition-all duration-300 relative">
+<aside [class.w-64]="!colapsado" [class.w-20]="colapsado" class="bg-stone-900 text-stone-300 min-h-screen flex flex-col shadow-2xl transition-all duration-300 relative print:hidden">
   
   <!-- Botón Hamburguesa Flotante -->
   <button (click)="toggleMenu()" class="absolute -right-4 top-6 bg-green-700 hover:bg-green-600 text-white w-8 h-8 rounded-full shadow-lg z-50 flex items-center justify-center transition">
@@ -32,4 +32,14 @@
       @if (!colapsado) { <span class="font-medium">Clientes</span> }
     </a>
   </nav>
+  <div class="mt-auto pt-6 border-t border-stone-700">
+  <button 
+    (click)="cerrarSesion()" 
+    class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+    Cerrar Sesión
+  </button>
+</div>
 </aside>

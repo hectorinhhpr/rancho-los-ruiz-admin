@@ -1,11 +1,9 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Necesario para el formato de moneda
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-// Importamos los nuevos servicios que hizo Karime (verifica que la ruta apunte a tu carpeta services)
 import { ProductoService } from '../../services/producto'; 
 import { VentaService } from '../../services/venta';
 
-// 1. Definimos cómo es un Producto y cómo es un Artículo en el Ticket
 export interface Producto { id: string; nombre: string; categoria: string; precio: number; icono: string; }
 export interface ItemTicket { producto: Producto; cantidad: number; importe: number; }
 
@@ -15,29 +13,48 @@ export interface ItemTicket { producto: Producto; cantidad: number; importe: num
   imports: [CommonModule],
   templateUrl: './pos.html',
 })
-export class PosComponent {
-  
-  // ¡Inyectamos la base de datos de Karime al iniciar la pantalla!
+export class PosComponent implements OnInit {
+  codigoBusqueda: string = ''; // <--- Agrega esta línea si no existe
+  // ... demás propiedades
+
   constructor(
     private productoService: ProductoService,
     private ventaService: VentaService
   ) {}
 
-  // 2. Inventario de prueba (Lo conservamos por ahora para que los botones visuales no desaparezcan)
-  productos: Producto[] = [
-    { id: '1', nombre: 'Hamburguesa Sencilla', categoria: 'Restaurante', precio: 120.00, icono: '🍔' },
-    { id: '2', nombre: 'Refresco de Cola 600ml', categoria: 'Tienda', precio: 35.00, icono: '🥤' },
-    { id: '3', nombre: 'Silla Tiffany (Renta 1D)', categoria: 'Mobiliario', precio: 25.00, icono: '🪑' },
-    { id: '4', nombre: 'Papas a la Francesa', categoria: 'Restaurante', precio: 45.00, icono: '🍟' }
-  ];
+  // 1. Iniciamos con la lista vacía para llenarla desde Supabase
+  productos: Producto[] = [];
 
-  // 3. Variables de la Caja Registradora
+  // 2. Variables de la Caja Registradora
   ticket: ItemTicket[] = [];
   subtotal: number = 0;
   iva: number = 0;
   total: number = 0;
 
-  // 4. Función para cuando haces clic en un producto
+  // 3. Se ejecuta automáticamente al cargar la pantalla
+  async ngOnInit() {
+    await this.cargarProductos();
+  }
+
+  // Carga de productos desde el servicio
+  async cargarProductos() {
+    try {
+      const data: any = await this.productoService.getProductos();
+      console.log('Datos recibidos de Supabase:', data); // <--- Añade esta línea para depurar
+
+      if (data && data.length > 0) {
+        this.productos = data.map((item: any) => ({
+          id: item.id,
+          nombre: item.nombre,
+          categoria: item.categoria || 'Restaurante',
+          precio: Number(item.precio_venta || item.precio || 0),
+          icono: item.icono || '📦'
+        }));
+      }
+    } catch (error) {
+      console.error('Error al cargar productos de Supabase:', error);
+    }
+  }
   // 4. Función para cuando haces clic en un producto
   agregarAlTicket(producto: Producto) {
     const precioNumerico = Number(producto.precio) || 0;
@@ -63,7 +80,7 @@ export class PosComponent {
       const cantidad = Number(item.cantidad) || 1;
       return suma + (precio * cantidad);
     }, 0);
-    this.iva = this.subtotal * 0.16; // Calculamos el 16% de IVA
+    this.iva = this.subtotal * 0.16;
     this.total = this.subtotal + this.iva;
   }
 
@@ -94,66 +111,44 @@ export class PosComponent {
     this.calcularTotales();
   }
 
-  // --- CONEXIÓN CON SUPABASE (KARIME) ---
-
-  /*// Lector de Códigos de Barras conectado a la BD real
-  async buscarProducto(codigo: string) {
+  // --- CONEXIÓN CON SUPABASE ---
+async buscarProducto(codigo: string) {
     if (!codigo || codigo.trim() === '') return;
 
-    // 1. Intentamos buscar el código en Supabase a través del servicio de Karime
-    const productoBD = await this.productoService.getProductoByCodigo(codigo);
-    
-    if (productoBD) {
-      this.agregarAlTicket(productoBD as any);
-    } else {
-      // 2. Plan B: Si no está en Supabase, buscamos en tus botones locales
-      const productoMock = this.productos.find(p => p.id === codigo);
-      if (productoMock) {
-        this.agregarAlTicket(productoMock);
-      } else {
-        alert('⚠️ Producto no encontrado en la base de datos de Supabase.');
-      }
-    }
-  }*/
-// Lector de Códigos de Barras conectado a la BD real
-  async buscarProducto(codigo: string) {
-    if (!codigo || codigo.trim() === '') return;
-
-    // 1. Buscamos el código en Supabase
     const productoBD: any = await this.productoService.getProductoByCodigo(codigo);
-    
+
     if (productoBD) {
-      // 2. Mapeamos los datos de Karime a las variables de tu interfaz
       const productoAdaptado = {
         id: productoBD.id,
         nombre: productoBD.nombre,
-        categoria: 'Restaurante', // Ponemos uno por defecto porque Karime no tiene esta columna
-        precio: Number(productoBD.precio_venta), // ¡LA CLAVE! Traducimos su columna a tu variable
-        icono: '🍔' // Icono por defecto
+        categoria: 'Restaurante',
+        precio: Number(productoBD.precio_venta || productoBD.precio),
+        icono: '🍔'
       };
-      
+
       this.agregarAlTicket(productoAdaptado as any);
     } else {
-      // 3. Plan B: Buscar en los botones locales si falla la BD
       const productoMock = this.productos.find(p => p.id === codigo);
       if (productoMock) {
         this.agregarAlTicket(productoMock);
       } else {
-        alert('⚠️ Producto no encontrado. Pídele a Karime que revise las políticas RLS (SELECT) en la tabla de productos.');
+        alert('⚠️ Producto no encontrado en la base de datos.');
       }
     }
+
+    this.codigoBusqueda = '';
   }
-  // ¡NUEVO! Función para registrar la venta en la nube
+
+
   async cobrarTicket() {
     if (this.ticket.length === 0) {
       alert('Agrega productos antes de cobrar.');
       return;
     }
 
-    // Armamos los datos exactos como Karime los programó
     const nuevaVenta = {
       total: this.total,
-      metodo_pago: 'Efectivo', // Por ahora lo dejamos por defecto
+      metodo_pago: 'Efectivo',
       detalles: this.ticket.map(item => ({
         id_producto: item.producto.id,
         cantidad: item.cantidad,
@@ -162,12 +157,11 @@ export class PosComponent {
     };
 
     try {
-      // Enviamos la venta a Supabase
       const resultado = await this.ventaService.crearVenta(nuevaVenta as any);
 
       if (resultado.success) {
         alert(`✅ ¡Venta registrada con éxito en Supabase!`);
-        this.limpiarTicket(); // Borramos la pantalla para el siguiente cliente
+        this.limpiarTicket();
       } else {
         alert('❌ Hubo un error al guardar la venta: ' + resultado.error);
       }

@@ -9,7 +9,21 @@ export class ProductoService {
 
   constructor(private supabaseService: SupabaseService) {}
 
-  // Método que consultará el lector de código de barras desde el POS
+  // 1. Método para obtener todos los productos para la cuadrícula del POS
+  async getProductos(): Promise<Producto[] | null> {
+    const { data, error } = await this.supabaseService.client
+      .from('productos')
+      .select('*');
+
+    if (error) {
+      console.error('Error al obtener los productos:', error.message);
+      return null;
+    }
+
+    return data;
+  }
+
+  // 2. Método que consulta el lector de código de barras desde el POS
   async getProductoByCodigo(codigo: string): Promise<Producto | null> {
     const { data, error } = await this.supabaseService.client
       .from('productos')

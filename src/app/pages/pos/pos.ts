@@ -1,12 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 
 // Importamos los servicios de Supabase
 import { ProductoService } from '../../services/producto'; 
 import { VentaService } from '../../services/venta';
 
-// Definimos cómo es un Producto y cómo es un Artículo en el Ticket
-export interface Producto { id: string; nombre: string; categoria: string; precio: number; icono: string; }
+export interface Producto { 
+  id: string; 
+  nombre: string; 
+  categoria: string; 
+  precio: number; 
+  icono: string; 
+  codigo_barras: string; // ¡NUEVO! Le decimos a la interfaz que espere este dato
+}
 export interface ItemTicket { producto: Producto; cantidad: number; importe: number; }
 
 @Component({
@@ -19,20 +25,17 @@ export class PosComponent implements OnInit {
   
   constructor(
     private productoService: ProductoService,
-    private ventaService: VentaService
+    private ventaService: VentaService,
+    private cdr: ChangeDetectorRef // 1. ¡Inyectamos el despertador de pantalla!
   ) {}
 
-  // ¡Vaciamos la lista! Ya no hay productos falsos, inicia en blanco esperando a Supabase
   productos: Producto[] = [];
-
-  // Variables de la Caja Registradora
   ticket: ItemTicket[] = [];
   subtotal: number = 0;
   iva: number = 0;
   total: number = 0;
   ticketsPausados: ItemTicket[][] = [];
 
-  // Se ejecuta automáticamente al abrir la pantalla del POS
   ngOnInit() {
     this.cargarCatalogo();
   }
@@ -43,21 +46,22 @@ export class PosComponent implements OnInit {
       const catalogoBD: any = await this.productoService.getProductos();
       
       if (catalogoBD) {
-        // Mapeamos las columnas de Karime a las variables de la interfaz
         this.productos = catalogoBD.map((p: any) => ({
           id: p.id,
           nombre: p.nombre,
           categoria: 'Restaurante', 
           precio: Number(p.precio_venta), 
-          icono: '🍔' 
+          icono: '🍔',
+          codigo_barras: p.codigo_barras // ¡NUEVO! Guardamos el código en la RAM
         }));
+        
+        this.cdr.detectChanges(); 
       }
     } catch (error) {
-      console.error('Error al descargar productos de Supabase:', error);
+      console.error('Error al descargar productos:', error);
     }
   }
 
-  // Función para cuando haces clic en un producto
   agregarAlTicket(producto: Producto) {
     const itemExistente = this.ticket.find(item => item.producto.id === producto.id);
     
@@ -67,23 +71,22 @@ export class PosComponent implements OnInit {
     } else {
       this.ticket.push({ producto, cantidad: 1, importe: producto.precio }); 
     }
+    
+    this.ticket = [...this.ticket]; 
     this.calcularTotales();
   }
 
-  // Matemáticas automáticas
   calcularTotales() {
     this.subtotal = this.ticket.reduce((suma, item) => suma + item.importe, 0);
     this.iva = this.subtotal * 0.16; 
     this.total = this.subtotal + this.iva;
   }
 
-  // Botón de cancelar
   limpiarTicket() {
     this.ticket = [];
     this.calcularTotales();
   }
 
-  // --- LÓGICA DE TICKETS PAUSADOS ---
   pausarTicket() {
     if (this.ticket.length > 0) {
       this.ticketsPausados.push([...this.ticket]); 
@@ -101,34 +104,26 @@ export class PosComponent implements OnInit {
     this.calcularTotales();
   }
 
-  // --- CONEXIÓN CON SUPABASE ---
+  // Buscador ultra rápido en memoria local (Sin peticiones a Supabase)
+  async buscarProducto(termino: string) {
+    if (!termino || termino.trim() === '') return;
 
-  // Lector de Códigos de Barras conectado a la BD real
-  async buscarProducto(codigo: string) {
-    if (!codigo || codigo.trim() === '') return;
+    // Convertimos lo que escribas a minúsculas para que "NUBE" y "nube" funcionen igual
+    const terminoMinusculas = termino.toLowerCase();
 
-    // Buscamos el código en Supabase
-    const productoBD: any = await this.productoService.getProductoByCodigo(codigo);
-    
-    if (productoBD) {
-      // Mapeamos los datos de Supabase a la interfaz
-      const productoAdaptado = {
-        id: productoBD.id,
-        nombre: productoBD.nombre,
-        categoria: 'Restaurante', 
-        precio: Number(productoBD.precio_venta), 
-        icono: '🍔' 
-      };
+    // Buscamos en nuestro arreglo descargado
+    const productoEncontrado = this.productos.find(p =>
+      (p.codigo_barras && p.codigo_barras === termino) || // 1. ¿Es exactamente el código?
+      p.nombre.toLowerCase().includes(terminoMinusculas)  // 2. ¿O el nombre incluye la palabra?
+    );
+
+    if (productoEncontrado) {
+      // Como ya es un objeto tipo "Producto", lo pasamos directo
+      this.agregarAlTicket(productoEncontrado);
       
-      this.agregarAlTicket(productoAdaptado as any);
+      this.cdr.detectChanges();
     } else {
-      // Plan B: Buscar en los botones locales si falla la BD
-      const productoMock = this.productos.find(p => p.id === codigo);
-      if (productoMock) {
-        this.agregarAlTicket(productoMock);
-      } else {
-        alert('⚠️ Producto no encontrado. Revisa que el código exista en la base de datos.');
-      }
+      alert('⚠️ Producto no encontrado. Revisa el código o la palabra clave.');
     }
   }
 
@@ -139,7 +134,6 @@ export class PosComponent implements OnInit {
       return;
     }
 
-    // Armamos los datos exactos para la tabla de ventas y detalle_ventas
     const nuevaVenta = {
       total: this.total,
       metodo_pago: 'Efectivo', 
@@ -151,15 +145,15 @@ export class PosComponent implements OnInit {
     };
 
     try {
-      // Enviamos la venta a Supabase
       const resultado = await this.ventaService.crearVenta(nuevaVenta as any);
 
       if (resultado.success) {
-        // Mandamos a imprimir automáticamente el ticket
         window.print();
-        
-        // Limpiamos el carrito en silencio para el siguiente cliente
         this.limpiarTicket(); 
+        
+        // ¡Despertamos a Angular para que limpie la pantalla después de imprimir!
+        this.cdr.detectChanges();
+        
       } else {
         alert('❌ Hubo un error al guardar la venta: ' + resultado.error);
       }

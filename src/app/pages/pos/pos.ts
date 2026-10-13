@@ -11,7 +11,7 @@ export interface Producto {
   categoria: string; 
   precio: number; 
   icono: string; 
-  codigo_barras: string; // ¡NUEVO! Le decimos a la interfaz que espere este dato
+  codigo_barras: string; 
 }
 export interface ItemTicket { producto: Producto; cantidad: number; importe: number; }
 
@@ -26,7 +26,7 @@ export class PosComponent implements OnInit {
   constructor(
     private productoService: ProductoService,
     private ventaService: VentaService,
-    private cdr: ChangeDetectorRef // 1. ¡Inyectamos el despertador de pantalla!
+    private cdr: ChangeDetectorRef 
   ) {}
 
   productos: Producto[] = [];
@@ -35,6 +35,12 @@ export class PosComponent implements OnInit {
   iva: number = 0;
   total: number = 0;
   ticketsPausados: ItemTicket[][] = [];
+
+  // --- VARIABLES PARA EL MENÚ DE CATEGORÍAS ---
+  productosOriginales: Producto[] = []; // Respaldo del catálogo completo
+  categoriasSami = ['Todas', 'Hogar', 'Artesanía', 'Decoración', 'Alimentos', 'Vinatería', 'Ropa', 'Temporada'];
+  categoriaSeleccionada = 'Todas';
+  menuCategoriasAbierto = false;
 
   ngOnInit() {
     this.cargarCatalogo();
@@ -49,11 +55,14 @@ export class PosComponent implements OnInit {
         this.productos = catalogoBD.map((p: any) => ({
           id: p.id,
           nombre: p.nombre,
-          categoria: 'Restaurante', 
+          categoria: 'Restaurante', // Pronto Aylem cambiará esto desde Supabase
           precio: Number(p.precio_venta), 
           icono: '🍔',
-          codigo_barras: p.codigo_barras // ¡NUEVO! Guardamos el código en la RAM
+          codigo_barras: p.codigo_barras 
         }));
+        
+        // ¡Guardamos la copia de seguridad para que el filtro funcione!
+        this.productosOriginales = [...this.productos];
         
         this.cdr.detectChanges(); 
       }
@@ -62,6 +71,25 @@ export class PosComponent implements OnInit {
     }
   }
 
+  // --- FUNCIONES DEL MENÚ DE CATEGORÍAS ---
+  toggleMenuCategorias() {
+    this.menuCategoriasAbierto = !this.menuCategoriasAbierto;
+  }
+
+  seleccionarCategoria(categoria: string) {
+    this.categoriaSeleccionada = categoria;
+    this.menuCategoriasAbierto = false; 
+    
+    if (categoria === 'Todas') {
+      this.productos = [...this.productosOriginales];
+    } else {
+      this.productos = this.productosOriginales.filter(p => p.categoria === categoria);
+    }
+    
+    this.cdr.detectChanges(); 
+  }
+
+  // --- LÓGICA DE LA CAJA ---
   agregarAlTicket(producto: Producto) {
     const itemExistente = this.ticket.find(item => item.producto.id === producto.id);
     
@@ -104,30 +132,25 @@ export class PosComponent implements OnInit {
     this.calcularTotales();
   }
 
-  // Buscador ultra rápido en memoria local (Sin peticiones a Supabase)
   async buscarProducto(termino: string) {
     if (!termino || termino.trim() === '') return;
 
-    // Convertimos lo que escribas a minúsculas para que "NUBE" y "nube" funcionen igual
     const terminoMinusculas = termino.toLowerCase();
 
-    // Buscamos en nuestro arreglo descargado
-    const productoEncontrado = this.productos.find(p =>
-      (p.codigo_barras && p.codigo_barras === termino) || // 1. ¿Es exactamente el código?
-      p.nombre.toLowerCase().includes(terminoMinusculas)  // 2. ¿O el nombre incluye la palabra?
+    // Ahora buscamos en el catálogo original para que encuentre productos aunque estés en otra categoría
+    const productoEncontrado = this.productosOriginales.find(p =>
+      (p.codigo_barras && p.codigo_barras === termino) || 
+      p.nombre.toLowerCase().includes(terminoMinusculas)  
     );
 
     if (productoEncontrado) {
-      // Como ya es un objeto tipo "Producto", lo pasamos directo
       this.agregarAlTicket(productoEncontrado);
-      
       this.cdr.detectChanges();
     } else {
       alert('⚠️ Producto no encontrado. Revisa el código o la palabra clave.');
     }
   }
 
-  // Función para registrar la venta en la nube e imprimir
   async cobrarTicket() {
     if (this.ticket.length === 0) {
       alert('Agrega productos antes de cobrar.');
@@ -150,10 +173,7 @@ export class PosComponent implements OnInit {
       if (resultado.success) {
         window.print();
         this.limpiarTicket(); 
-        
-        // ¡Despertamos a Angular para que limpie la pantalla después de imprimir!
         this.cdr.detectChanges();
-        
       } else {
         alert('❌ Hubo un error al guardar la venta: ' + resultado.error);
       }

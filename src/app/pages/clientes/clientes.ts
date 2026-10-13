@@ -1,25 +1,66 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+// ⚠️ Descomentar cuando Karime termine el servicio en Supabase
+// import { ClienteService } from '../../services/cliente'; 
+
+// Adaptamos la interfaz exactamente a los nombres de variables de tu HTML
 export interface Cliente {
   id: string;
   nombre: string;
   telefono: string;
   correo: string;
-  tipo: 'Frecuente' | 'Ocasional' | 'Nuevo';
-  ultimaVisita: string;
+  tipo: string;
+  ultimaVisita: string; 
 }
 
 @Component({
   selector: 'app-clientes',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './clientes.html',
+  templateUrl: './clientes.html'
 })
-export class Clientes {
-  // Variables para controlar la ventana modal
-  mostrarModal = false;
+export class ClientesComponent implements OnInit {
 
+  // 1. Variables exactas que estás usando en tu HTML
+  listaClientes: Cliente[] = [];
+  mostrarModal = false; 
+
+  constructor(
+    // private clienteService: ClienteService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.cargarClientes();
+  }
+
+  // 2. Conexión a la base de datos (Lista para activarse)
+  async cargarClientes() {
+    /*
+    try {
+      const data: any = await this.clienteService.getClientes();
+      
+      if (data) {
+        // Mapeamos los datos de Aylem a tus variables del HTML
+        this.listaClientes = data.map((c: any) => ({
+          id: c.id,
+          nombre: c.nombre,
+          telefono: c.telefono,
+          correo: c.correo,
+          tipo: c.tipo,
+          ultimaVisita: c.ultima_visita || 'Reciente' // Traducimos el guion bajo
+        }));
+        
+        this.cdr.detectChanges(); // Despertamos a Angular para dibujar la tabla
+      }
+    } catch (error) {
+      console.error('Error al cargar clientes:', error);
+    }
+    */
+  }
+
+  // 3. Funciones para abrir y cerrar el recuadro flotante
   abrirModal() {
     this.mostrarModal = true;
   }
@@ -28,11 +69,9 @@ export class Clientes {
     this.mostrarModal = false;
   }
 
-  // Datos de prueba para maquetar la tabla
-  listaClientes: Cliente[] = [
-    { id: 'C001', nombre: 'Juan Pérez', telefono: '55 1234 5678', correo: 'juan@email.com', tipo: 'Frecuente', ultimaVisita: '2026-09-28' },
-    { id: 'C002', nombre: 'María González', telefono: '55 9876 5432', correo: 'maria@email.com', tipo: 'Nuevo', ultimaVisita: '2026-10-02' },
-    { id: 'C003', nombre: 'Carlos Ruiz', telefono: '55 5555 5555', correo: 'carlos.r@email.com', tipo: 'Ocasional', ultimaVisita: '2026-08-15' },
-    { id: 'C004', nombre: 'Ana López', telefono: '55 1111 2222', correo: 'ana.lopez@email.com', tipo: 'Frecuente', ultimaVisita: '2026-10-04' }
-  ];
+  // 4. Próxima función a programar (Guardar el formulario)
+  guardarCliente() {
+    alert('Falta conectar este botón con Supabase para guardar el cliente.');
+    this.cerrarModal();
+  }
 }

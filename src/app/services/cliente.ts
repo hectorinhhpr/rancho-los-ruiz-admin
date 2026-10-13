@@ -12,7 +12,8 @@ export class ClienteService {
     const { data, error } = await this.supabaseService.client
       .from('clientes')
       .select('*')
-      .order('nombre', { ascending: true });
+      // 👇 AQUÍ ESTÁ LA CORRECCIÓN: Cambiado de 'nombre' a 'nombre_completo' 👇
+      .order('nombre_completo', { ascending: true });
 
     if (error) throw error;
     return data || [];

@@ -15,7 +15,7 @@ export class AuthService {
   async getUser() {
     const { data: { user } } = await this.supabaseService.client.auth.getUser();
     return user;
-  }
+  } 
 
   constructor(private supabaseService: SupabaseService) {}
 

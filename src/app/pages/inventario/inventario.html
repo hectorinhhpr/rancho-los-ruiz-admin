@@ -1,0 +1,80 @@
+<div class="p-8 h-full bg-stone-100 font-sans relative">
+  
+  <!-- Encabezado con Filtro y Botón -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-extrabold text-stone-800">Control de Inventario</h1>
+      <p class="text-stone-500 mt-1">Monitorea tus existencias y alertas de stock.</p>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <!-- Menú desplegable del Filtro -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-bold text-stone-600">Filtrar:</label>
+        <select [(ngModel)]="filtroEstado" class="px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-white shadow-sm font-medium text-stone-700">
+          <option value="Todos">📦 Todos los insumos</option>
+          <option value="Críticos">🔴 Urgente comprar</option>
+          <option value="Por Agotarse">🟡 Por agotarse</option>
+          <option value="Óptimos">🟢 Nivel Óptimo</option>
+        </select>
+      </div>
+
+      <button class="bg-green-700 hover:bg-green-800 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+        <span>+</span> Agregar Insumo
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-stone-100 text-stone-600 text-sm border-b border-stone-200">
+            <th class="p-4 font-semibold">Producto</th>
+            <th class="p-4 font-semibold">Categoría</th>
+            <th class="p-4 font-semibold text-center">Stock Actual</th>
+            <th class="p-4 font-semibold text-center">Stock Mínimo</th>
+            <th class="p-4 font-semibold text-center">Estado</th>
+            <th class="p-4 font-semibold text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <!-- Ciclo de Angular actualizado a insumosFiltrados -->
+          @for (item of insumosFiltrados; track item.id) {
+            <tr class="border-b border-stone-100 hover:bg-stone-50 transition">
+              <td class="p-4 font-bold text-stone-800">{{ item.nombre }}</td>
+              <td class="p-4 text-sm text-stone-500">{{ item.categoria }}</td>
+              
+              <td class="p-4 text-center font-mono font-medium text-stone-700">
+                {{ item.stockActual }} <span class="text-xs text-stone-400">{{ item.unidad }}</span>
+              </td>
+              
+              <td class="p-4 text-center font-mono text-stone-400">
+                {{ item.stockMinimo }} <span class="text-xs">{{ item.unidad }}</span>
+              </td>
+              
+              <td class="p-4 text-center">
+                <span class="px-3 py-1 rounded-full text-xs font-bold" [ngClass]="obtenerColorAlerta(item.stockActual, item.stockMinimo)">
+                  @if (item.stockActual <= item.stockMinimo / 2) {
+                    Crítico
+                  } @else if (item.stockActual <= item.stockMinimo) {
+                    Por Agotarse
+                  } @else {
+                    Óptimo
+                  }
+                </span>
+              </td>
+              
+              <td class="p-4 text-center">
+                <button class="text-stone-400 hover:text-green-700 transition px-2">✏️</button>
+                <button class="text-stone-400 hover:text-red-600 transition px-2">🗑️</button>
+              </td>
+            </tr>
+          }
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -17,29 +17,47 @@
 
   <!-- Navegación -->
   <nav class="flex-1 px-3 py-6 space-y-2 overflow-hidden">
-    <a routerLink="/dashboard" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
-      <span class="text-xl">📊</span>
-      @if (!colapsado) { <span class="font-medium">Dashboard</span> }
-    </a>
+    
+    <!-- DASHBOARD: Solo lo ve el Admin (Sami) -->
+    @if (rolActual === 'Admin') {
+      <a routerLink="/dashboard" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
+        <span class="text-xl">📊</span>
+        @if (!colapsado) { <span class="font-medium">Dashboard</span> }
+      </a>
+    }
 
+    <!-- PUNTO DE VENTA: Lo ven todos (Admin y Cajero) -->
     <a routerLink="/pos" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
       <span class="text-xl">🛒</span>
       @if (!colapsado) { <span class="font-medium">Punto de Venta</span> }
     </a>
     
-    <a routerLink="/clientes" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
-      <span class="text-xl">👥</span>
-      @if (!colapsado) { <span class="font-medium">Clientes</span> }
-    </a>
+    <!-- CLIENTES: Solo lo ve el Admin (Sami) -->
+    @if (rolActual === 'Admin') {
+      <a routerLink="/clientes" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
+        <span class="text-xl">👥</span>
+        @if (!colapsado) { <span class="font-medium">Clientes</span> }
+      </a>
+    }
+    <!-- INVENTARIO: Solo lo ve el Admin (Sami) -->
+    @if (rolActual === 'Admin') {
+      <a routerLink="/inventario" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
+        <span class="text-xl">📦</span>
+        @if (!colapsado) { <span class="font-medium">Inventario</span> }
+      </a>
+    }
+
   </nav>
+
+  <!-- Cerrar Sesión (Visible para todos) -->
   <div class="mt-auto pt-6 border-t border-stone-700">
-  <button 
-    (click)="cerrarSesion()" 
-    class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-    </svg>
-    Cerrar Sesión
-  </button>
-</div>
+    <button 
+      (click)="cerrarSesion()" 
+      class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      </svg>
+      @if (!colapsado) { Cerrar Sesión }
+    </button>
+  </div>
 </aside>

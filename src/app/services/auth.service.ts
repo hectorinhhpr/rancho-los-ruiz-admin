@@ -24,6 +24,7 @@ export class AuthService {
   }
 
   // Obtener el rol del usuario desde la tabla 'perfiles' de Supabase
+// Obtener el rol del usuario desde la tabla 'perfiles' de Supabase
   getUserRole(): Observable<string> {
     return this.getCurrentUser().pipe(
       switchMap(user => {
@@ -35,7 +36,12 @@ export class AuthService {
             .eq('id', user.id)
             .single()
         ).pipe(
-          map(res => (res.data ? res.data.rol : 'cajero'))
+          map(res => {
+            if (!res.data) return 'cajero';
+            const rol = res.data.rol;
+            // Estandarizar si en la base de datos dice 'administrador'
+            return (rol === 'administrador' || rol === 'admin') ? 'admin' : 'cajero';
+          })
         );
       })
     );

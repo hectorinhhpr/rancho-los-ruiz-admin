@@ -40,7 +40,7 @@ export class AuthService {
             if (!res.data) return 'cajero';
             const rol = res.data.rol;
             // Estandarizar si en la base de datos dice 'administrador'
-            return (rol === 'administrador' || rol === 'admin') ? 'admin' : 'cajero';
+            return (rol === 'administrador' || rol === 'admin'|| rol === 'Admin') ? 'admin' : 'cajero';
           })
         );
       })

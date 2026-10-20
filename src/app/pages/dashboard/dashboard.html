@@ -32,16 +32,37 @@
       <!-- Separador visual -->
       <div class="h-8 w-px bg-stone-200 hidden sm:block"></div>
 
-      <!-- Perfil de Usuario -->
-      <div class="flex items-center gap-3 cursor-pointer group">
-        <div class="text-right hidden sm:block">
-          <p class="text-sm font-bold text-stone-800 group-hover:text-green-700 transition">Héctor Pacheco</p>
-          <p class="text-xs text-stone-500 font-medium">Administrador</p>
+      <!-- Perfil de Usuario con Menú Desplegable -->
+      <div class="relative">
+        
+        <!-- Botón del perfil (ahora con el evento click) -->
+        <div (click)="toggleMenuPerfil()" class="flex items-center gap-3 cursor-pointer group">
+          <div class="text-right hidden sm:block">
+            <p class="text-sm font-bold text-stone-800 group-hover:text-green-700 transition">Héctor Pacheco</p>
+            <p class="text-xs text-stone-500 font-medium">Administrador</p>
+          </div>
+          <!-- Avatar con iniciales -->
+          <div class="w-10 h-10 rounded-full bg-green-100 border-2 border-green-600 flex items-center justify-center text-green-800 font-bold shadow-sm group-hover:bg-green-200 transition">
+            HP
+          </div>
         </div>
-        <!-- Avatar con iniciales -->
-        <div class="w-10 h-10 rounded-full bg-green-100 border-2 border-green-600 flex items-center justify-center text-green-800 font-bold shadow-sm group-hover:bg-green-200 transition">
-          HP
-        </div>
+
+        <!-- Menú Desplegable Flotante -->
+        @if (mostrarMenuPerfil) {
+          <div class="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden z-50 transition-all">
+            <div class="py-2">
+              <button class="w-full text-left px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-100 flex items-center gap-3 transition">
+                <span>⚙️</span> Configuración
+              </button>
+              
+              <div class="h-px bg-stone-200 my-1"></div>
+              
+              <button (click)="cerrarSesion()" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition font-medium">
+                <span>🚪</span> Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        }
       </div>
 
     </div>

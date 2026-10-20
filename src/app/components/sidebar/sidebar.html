@@ -19,7 +19,7 @@
   <nav class="flex-1 px-3 py-6 space-y-2 overflow-hidden">
     
     <!-- DASHBOARD: Solo lo ve el Admin (Sami) -->
-    @if (rolActual === 'Admin') {
+    @if (rolActual === 'admin') {
       <a routerLink="/dashboard" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
         <span class="text-xl">📊</span>
         @if (!colapsado) { <span class="font-medium">Dashboard</span> }
@@ -33,14 +33,14 @@
     </a>
     
     <!-- CLIENTES: Solo lo ve el Admin (Sami) -->
-    @if (rolActual === 'Admin') {
+    @if (rolActual === 'admin') {
       <a routerLink="/clientes" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
         <span class="text-xl">👥</span>
         @if (!colapsado) { <span class="font-medium">Clientes</span> }
       </a>
     }
     <!-- INVENTARIO: Solo lo ve el Admin (Sami) -->
-    @if (rolActual === 'Admin') {
+    @if (rolActual === 'admin') {
       <a routerLink="/inventario" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
         <span class="text-xl">📦</span>
         @if (!colapsado) { <span class="font-medium">Inventario</span> }

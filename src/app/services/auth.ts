@@ -3,7 +3,7 @@ import { SupabaseService } from './supabase';
 
 export interface PerfilUsuario {
   id: string;
-  nombre: string;
+  nombre_completo: string;
   rol: 'administrador' | 'cajero';
 }
 
@@ -42,7 +42,7 @@ export class AuthService {
   async obtenerPerfil(userId: string): Promise<PerfilUsuario | undefined> {
     const { data } = await this.supabaseService.client
       .from('perfiles')
-      .select('id, nombre, rol')
+      .select('id, nombre_completo, rol')
       .eq('id', userId)
       .single();
 

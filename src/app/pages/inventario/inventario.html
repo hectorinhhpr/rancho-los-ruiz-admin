@@ -1,6 +1,6 @@
 <div class="p-8 h-full bg-stone-100 font-sans relative">
   
-  <!-- Encabezado con Filtro y Botón -->
+  <!-- Encabezado -->
   <div class="flex justify-between items-center mb-8">
     <div>
       <h1 class="text-3xl font-extrabold text-stone-800">Control de Inventario</h1>
@@ -8,30 +8,43 @@
     </div>
     
     <div class="flex items-center gap-4">
-      <!-- Menú desplegable del Filtro -->
+      
+      <!-- Barra de Búsqueda -->
+      <div class="relative">
+        <span class="absolute left-3 top-2.5 text-stone-400">🔍</span>
+        <input 
+          type="text" 
+          [(ngModel)]="terminoBusqueda" 
+          placeholder="Buscar producto..." 
+          class="pl-10 pr-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-white shadow-sm font-medium text-stone-700 w-64 transition-all"
+        >
+      </div>
+
+      <!-- Menú desplegable del Filtro de Colores -->
       <div class="flex items-center gap-2">
-        <label class="text-sm font-bold text-stone-600">Filtrar:</label>
         <select [(ngModel)]="filtroEstado" class="px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-white shadow-sm font-medium text-stone-700">
-          <option value="Todos">📦 Todos los insumos</option>
-          <option value="Críticos">🔴 Urgente comprar</option>
+          <option value="Todos">📦 Todos</option>
+          <option value="Críticos">🔴 Urgentes</option>
           <option value="Por Agotarse">🟡 Por agotarse</option>
-          <option value="Óptimos">🟢 Nivel Óptimo</option>
+          <option value="Óptimos">🟢 Óptimos</option>
         </select>
       </div>
 
-      <button class="bg-green-700 hover:bg-green-800 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition flex items-center gap-2">
-        <span>+</span> Agregar Insumo
+      <!-- Botón Agregar -->
+      <button (click)="abrirModal()" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+        <span>+</span> Agregar
       </button>
     </div>
   </div>
 
+  <!-- Tabla de Inventario -->
   <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="bg-stone-100 text-stone-600 text-sm border-b border-stone-200">
             <th class="p-4 font-semibold">Producto</th>
-            <th class="p-4 font-semibold">Categoría</th>
+            <th class="p-4 font-semibold">Almacén</th>
             <th class="p-4 font-semibold text-center">Stock Actual</th>
             <th class="p-4 font-semibold text-center">Stock Mínimo</th>
             <th class="p-4 font-semibold text-center">Estado</th>
@@ -40,35 +53,34 @@
         </thead>
         <tbody>
           
-          <!-- Ciclo de Angular actualizado a insumosFiltrados -->
+          <!-- Ciclo de Angular conectado a la Base de Datos -->
           @for (item of insumosFiltrados; track item.id) {
             <tr class="border-b border-stone-100 hover:bg-stone-50 transition">
-              <td class="p-4 font-bold text-stone-800">{{ item.nombre }}</td>
-              <td class="p-4 text-sm text-stone-500">{{ item.categoria }}</td>
-              
-              <td class="p-4 text-center font-mono font-medium text-stone-700">
-                {{ item.stockActual }} <span class="text-xs text-stone-400">{{ item.unidad }}</span>
-              </td>
-              
-              <td class="p-4 text-center font-mono text-stone-400">
-                {{ item.stockMinimo }} <span class="text-xs">{{ item.unidad }}</span>
-              </td>
-              
+              <td class="p-4 font-bold text-stone-800">{{ item.productos?.nombre }}</td>
+              <td class="p-4 text-sm text-stone-500">{{ item.almacen }}</td>
+              <td class="p-4 text-center font-mono font-medium text-stone-700">{{ item.stock_actual }}</td>
+              <td class="p-4 text-center font-mono text-stone-400">{{ item.stock_minimo }}</td>
               <td class="p-4 text-center">
-                <span class="px-3 py-1 rounded-full text-xs font-bold" [ngClass]="obtenerColorAlerta(item.stockActual, item.stockMinimo)">
-                  @if (item.stockActual <= item.stockMinimo / 2) {
+                <span class="px-3 py-1 rounded-full text-xs font-bold" [ngClass]="obtenerColorAlerta(item.stock_actual, item.stock_minimo)">
+                  @if (item.stock_actual <= item.stock_minimo / 2) {
                     Crítico
-                  } @else if (item.stockActual <= item.stockMinimo) {
+                  } @else if (item.stock_actual <= item.stock_minimo) {
                     Por Agotarse
                   } @else {
                     Óptimo
                   }
                 </span>
               </td>
-              
               <td class="p-4 text-center">
                 <button class="text-stone-400 hover:text-green-700 transition px-2">✏️</button>
                 <button class="text-stone-400 hover:text-red-600 transition px-2">🗑️</button>
+              </td>
+            </tr>
+          } @empty {
+            <!-- Mensaje cuando no hay datos -->
+            <tr>
+              <td colspan="6" class="p-12 text-center text-stone-500 font-medium">
+                No se encontraron productos registrados en el inventario.
               </td>
             </tr>
           }
@@ -77,4 +89,63 @@
       </table>
     </div>
   </div>
+
+  <!-- MAGIA: Ventana Emergente (Modal) para Agregar Insumo -->
+  @if (mostrarModal) {
+    <div class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      
+      <!-- Tarjeta del Modal -->
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
+        
+        <!-- Cabecera -->
+        <div class="bg-stone-50 border-b border-stone-100 px-6 py-4 flex justify-between items-center">
+          <h2 class="text-xl font-bold text-stone-800">Registrar en Inventario</h2>
+          <button (click)="cerrarModal()" class="text-stone-400 hover:text-red-500 transition text-xl font-bold">&times;</button>
+        </div>
+
+        <!-- Formulario -->
+        <div class="p-6 space-y-4">
+          
+          <!-- Campo de Producto Real -->
+          <div>
+            <label class="block text-sm font-bold text-stone-700 mb-1">Producto (Menú)</label>
+            <select [(ngModel)]="nuevoInsumo.producto_id" class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-stone-50">
+              <option value="" disabled selected>Selecciona un producto...</option>
+              @for (prod of productosDisponibles; track prod.id) {
+                <option [value]="prod.id">{{ prod.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-stone-700 mb-1">Almacén</label>
+            <select [(ngModel)]="nuevoInsumo.almacen" class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-stone-50">
+              <option value="Principal">Principal</option>
+              <option value="Refrigerador 1">Refrigerador 1</option>
+              <option value="Bodega Seca">Bodega Seca</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-bold text-stone-700 mb-1">Stock Actual</label>
+              <input type="number" [(ngModel)]="nuevoInsumo.stock_actual" class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-stone-50">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-stone-700 mb-1">Stock Mínimo</label>
+              <input type="number" [(ngModel)]="nuevoInsumo.stock_minimo" class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-stone-50">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="bg-stone-50 border-t border-stone-100 px-6 py-4 flex justify-end gap-3">
+          <button (click)="cerrarModal()" class="px-5 py-2.5 text-sm font-bold text-stone-600 hover:bg-stone-200 rounded-lg transition">Cancelar</button>
+          <button (click)="guardarInsumo()" class="px-5 py-2.5 text-sm font-bold text-white bg-green-700 hover:bg-green-800 rounded-lg shadow-md transition">Guardar Insumo</button>
+        </div>
+
+      </div>
+    </div>
+  }
 </div>

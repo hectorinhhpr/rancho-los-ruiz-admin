@@ -56,4 +56,27 @@ export class InventarioService {
         .eq('id', id)
     );
   }
+  // 👈 NUEVA: Trae los productos del menú para ponerlos en el desplegable
+  getProductosMenu(): Observable<any[]> {
+    return from(
+      this.supabase
+        .from('productos')
+        .select('id, nombre')
+        .order('nombre', { ascending: true })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      })
+    );
+  }
+
+  // 👈 NUEVA: Inserta el nuevo insumo en la tabla de inventario
+  agregarInsumo(nuevoInsumo: any): Observable<any> {
+    return from(
+      this.supabase
+        .from('inventario')
+        .insert([nuevoInsumo])
+    );
+  }
 }

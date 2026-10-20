@@ -36,6 +36,11 @@ export class PosComponent implements OnInit {
   total: number = 0;
   ticketsPausados: ItemTicket[][] = [];
 
+  // --- VARIABLES PARA EL TICKET ESTÉTICO ---
+  numeroTicket: string = '00001'; 
+  nombreCajero: string = 'Cargando...'; 
+  fechaTicket: Date = new Date();
+
   // --- VARIABLES PARA EL MENÚ DE CATEGORÍAS ---
   productosOriginales: Producto[] = []; // Respaldo del catálogo completo
   categoriasSami = ['Todas', 'Hogar', 'Artesanía', 'Decoración', 'Alimentos', 'Vinatería', 'Ropa', 'Temporada'];
@@ -44,6 +49,27 @@ export class PosComponent implements OnInit {
 
   ngOnInit() {
     this.cargarCatalogo();
+    this.obtenerUsuarioActual();
+  }
+
+  obtenerUsuarioActual() {
+    // Cuando Aylem tenga listo el AuthService con Supabase, pueden cambiar esto.
+    // Por ahora, simulamos que busca quién inició sesión.
+    // Si no hay nadie, por defecto dirá 'Sami'
+    const correoGuardado = localStorage.getItem('sb-tuproyecto-auth-token') || 'Sami';
+    
+    if (correoGuardado !== 'Sami') {
+      try {
+        const authData = JSON.parse(correoGuardado);
+        this.nombreCajero = authData.user.email.split('@')[0];
+      } catch (e) {
+        this.nombreCajero = 'Sami';
+      }
+    } else {
+      this.nombreCajero = 'Sami';
+    }
+    
+    this.cdr.detectChanges();
   }
 
   // Descargamos la mercancía real y creamos los botones dinámicamente
@@ -171,8 +197,20 @@ export class PosComponent implements OnInit {
       const resultado = await this.ventaService.crearVenta(nuevaVenta as any);
 
       if (resultado.success) {
+        // Actualizamos la fecha a la hora exacta del cobro
+        this.fechaTicket = new Date();
+        this.cdr.detectChanges();
+
+        // Mandamos a imprimir
         window.print();
+        
+        // Limpiamos la caja
         this.limpiarTicket(); 
+        
+        // Sumamos 1 al número de ticket y rellenamos con ceros (00002)
+        const siguienteTicket = parseInt(this.numeroTicket) + 1;
+        this.numeroTicket = siguienteTicket.toString().padStart(5, '0');
+        
         this.cdr.detectChanges();
       } else {
         alert('❌ Hubo un error al guardar la venta: ' + resultado.error);

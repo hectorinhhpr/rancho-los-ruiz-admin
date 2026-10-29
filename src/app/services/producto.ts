@@ -1,80 +1,71 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase';
-import { Producto } from '../models/producto.model'; // Asegúrate de que esta ruta sea correcta según tu proyecto
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductoService {
-  private readonly BUCKET_NAME = 'productos_imagenes';
 
   constructor(private supabaseService: SupabaseService) {}
 
-  // Método que consultará el lector de código de barras desde el POS (Creado por Héctor)
-  async getProductoByCodigo(codigo: string): Promise<Producto | null> {
-    const { data, error } = await this.supabaseService.client
-      .from('productos')
-      .select('*')
-      .eq('codigo_barras', codigo)
-      .single();
-
-    if (error) {
-      console.error('Error al buscar el producto por código:', error.message);
-      return null;
-    }
-
-    return data;
-  }
-
-  // Método para traer todos los productos y pintar los botones en el POS (Creado por Héctor)
+  // Obtener todos los productos junto con su stock real de la tabla de inventario
   async getProductos(): Promise<any[] | null> {
     const { data, error } = await this.supabaseService.client
       .from('productos')
-      .select('*');
+      .select('*, inventario(stock_actual)'); // 👈 Relacionamos con inventario
 
     if (error) {
       console.error('Error al descargar el catálogo:', error.message);
       return null;
     }
 
-    return data;
+    // Mapeamos el stock sumando los almacenes o dejando 0 si no se ha dado de alta
+    const productosConStock = data.map((p: any) => {
+      const stockTotal = p.inventario && p.inventario.length > 0 
+        ? p.inventario.reduce((acc: number, curr: any) => acc + (curr.stock_actual || 0), 0)
+        : 0;
+
+      return {
+        ...p,
+        stock: stockTotal
+      };
+    });
+
+    return productosConStock;
   }
 
-  // NUEVO: Subir foto de producto a Supabase Storage y retornar la URL pública
-  async subirImagenProducto(file: File): Promise<string | null> {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `catalogo/${fileName}`;
-
-    const { error: uploadError } = await this.supabaseService.client.storage
-      .from(this.BUCKET_NAME)
-      .upload(filePath, file, { cacheControl: '3600', upsert: false });
-
-    if (uploadError) {
-      console.error('Error al subir la imagen:', uploadError.message);
-      return null;
-    }
-
-    const { data } = this.supabaseService.client.storage
-      .from(this.BUCKET_NAME)
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
-  }
-
-  // NUEVO: Crear un nuevo producto en la tabla 'productos'
-  async crearProducto(producto: Partial<Producto>): Promise<Producto | null> {
-    const { data, error } = await this.supabaseService.client
+  // Registrar un nuevo producto en el catálogo
+  async crearProducto(producto: any): Promise<boolean> {
+    const { error } = await this.supabaseService.client
       .from('productos')
-      .insert([producto])
-      .select()
-      .single();
+      .insert([producto]);
 
     if (error) {
-      console.error('Error al crear el producto:', error.message);
+      console.error('Error al crear producto:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  // Subir imagen al Storage de Supabase
+  async subirImagenProducto(file: File): Promise<string | null> {
+    try {
+      const fileName = `${Date.now()}_${file.name}`;
+      const { data, error } = await this.supabaseService.client.storage
+        .from('productos_imagenes')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      // Obtener la URL pública de la imagen
+      const { data: publicURLData } = this.supabaseService.client.storage
+        .from('productos_imagenes')
+        .getPublicUrl(data.path);
+
+      return publicURLData.publicUrl;
+    } catch (err: any) {
+      console.error('Error al subir la imagen:', err.message);
       return null;
     }
-
-    return data;
   }
 }

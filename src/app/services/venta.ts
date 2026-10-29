@@ -9,6 +9,23 @@ export class VentaService {
 
   constructor(private supabaseService: SupabaseService) {}
 
+  // NUEVO: Consultar el folio oficial desde la función que hizo Aylem en Supabase
+  async obtenerSiguienteFolio(): Promise<string> {
+    try {
+      const { data, error } = await this.supabaseService.client
+        .rpc('obtener_siguiente_folio'); // Llama a la función de la BD
+
+      if (error) throw error;
+
+      // Si la base regresa un número, lo rellenamos con ceros (ej: 00002)
+      const numero = data || 1;
+      return numero.toString().padStart(5, '0');
+    } catch (err: any) {
+      console.error('Error al obtener el siguiente folio:', err.message);
+      return '00001'; // Fallback por seguridad
+    }
+  }
+
   // Registrar una nueva venta completa (ticket + detalle de productos)
   async crearVenta(venta: Venta): Promise<{ success: boolean; folio?: string; error?: string }> {
     try {

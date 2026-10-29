@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Necesario para el [(ngModel)]
-import { ProductoService } from '../services/producto'; // El servicio de Aylem
+import { FormsModule } from '@angular/forms'; 
+import { ProductoService } from '../services/producto'; 
 
 @Component({
   selector: 'app-nuevo-producto',
@@ -9,13 +9,12 @@ import { ProductoService } from '../services/producto'; // El servicio de Aylem
   imports: [CommonModule, FormsModule],
   templateUrl: './nuevo-producto.html'
 })
-export class NuevoProductoComponent {
-  // Objeto enlazado al formulario
+export class NuevoProductoComponent implements OnInit {
   nuevoProducto = {
     nombre: '',
-    descripcion: '', // 👈 Nuevo
-    numero_parte: '', // 👈 Nuevo
-    categoria: 'Hogar',
+    descripcion: '',
+    numero_parte: '',
+    categoria: '',
     precio_venta: null,
     codigo_barras: ''
   };
@@ -24,9 +23,25 @@ export class NuevoProductoComponent {
   imagenPreview: string | ArrayBuffer | null = null;
   guardando = false;
 
+  // Lista de categorías sugeridas (se alimenta de lo que ya hay en la BD + predeterminadas)
+  categoriasDisponibles: string[] = ['Hogar', 'Alimentos', 'Bebidas', 'Navidad', 'Artesanías'];
+
   constructor(private productoService: ProductoService) {}
 
-  // Captura el archivo de la foto y genera una vista previa
+  async ngOnInit() {
+    await this.cargarCategoriasExistentes();
+  }
+
+  // Trae las categorías que ya se hayan registrado en Supabase para mostrarlas como sugerencia
+  async cargarCategoriasExistentes() {
+    const productos = await this.productoService.getProductos();
+    if (productos) {
+      const catsBD = productos.map((p: any) => p.categoria).filter((c: string) => c);
+      // Unimos las de la BD con las base sin repetir elementos
+      this.categoriasDisponibles = Array.from(new Set([...this.categoriasDisponibles, ...catsBD]));
+    }
+  }
+
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -48,7 +63,6 @@ export class NuevoProductoComponent {
     try {
       let imagen_url = '';
       
-      // 1. Si Sami subió una foto, usamos el bucket de Supabase
       if (this.archivoImagen) {
         const url_subida = await this.productoService.subirImagenProducto(this.archivoImagen);
         if (url_subida) {
@@ -56,22 +70,24 @@ export class NuevoProductoComponent {
         }
       }
 
-      // 2. Preparamos los datos finales con la URL de la imagen
       const productoFinal = {
-        ...this.nuevoProducto,
-        precio_venta: Number(this.nuevoProducto.precio_venta), // 👈 Forzamos a que sea número
+        nombre: this.nuevoProducto.nombre,
+        descripcion: this.nuevoProducto.descripcion,
+        numero_parte: this.nuevoProducto.numero_parte,
+        categoria: this.nuevoProducto.categoria || 'General',
+        precio_venta: Number(this.nuevoProducto.precio_venta),
+        codigo_barras: this.nuevoProducto.codigo_barras,
         imagen_url: imagen_url
       };
 
-      // 3. Ejecutamos la función de Aylem para guardar en BD
       const productoGuardado = await this.productoService.crearProducto(productoFinal);
       
-      // Aylem configuró el servicio para devolver el producto si hay éxito, o null si hay error
       if (productoGuardado) { 
-        alert('✅ ¡Producto guardado con éxito!');
+        alert('✅ ¡Producto guardado con éxito en Supabase!');
         this.limpiarFormulario();
+        await this.cargarCategoriasExistentes(); // Actualiza la lista si se creó una nueva
       } else {
-        alert('❌ Error al guardar. Es posible que el código de barras ya exista o falten datos.');
+        alert('❌ Error al guardar. Es posible que el código de barras ya exista.');
       }
     } catch (error) {
       console.error(error);
@@ -83,9 +99,9 @@ export class NuevoProductoComponent {
   limpiarFormulario() {
     this.nuevoProducto = { 
       nombre: '', 
-      descripcion: '', // <-- Nuevo
-      numero_parte: '', // <-- Nuevo
-      categoria: 'Alimentos', 
+      descripcion: '',
+      numero_parte: '',
+      categoria: '', 
       precio_venta: null, 
       codigo_barras: '' 
     };

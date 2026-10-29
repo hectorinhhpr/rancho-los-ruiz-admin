@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventarioService, ItemInventario } from '../../services/inventario.service'; 
@@ -16,7 +16,7 @@ export class InventarioComponent implements OnInit {
   mostrarModal = false;
 
   listaInsumos: ItemInventario[] = []; 
-  productosDisponibles: any[] = []; // 👈 MAGIA: Aquí guardaremos la Hamburguesa, Hot Dog, etc.
+  productosDisponibles: any[] = []; 
 
   nuevoInsumo = {
     producto_id: '',
@@ -25,21 +25,24 @@ export class InventarioComponent implements OnInit {
     stock_minimo: 0
   };
 
-  constructor(private inventarioService: InventarioService) {}
+  constructor(
+    private inventarioService: InventarioService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.cargarDatos();
   }
 
   cargarDatos() {
-    // 1. Cargamos la tabla del inventario
     this.inventarioService.getInventario().subscribe(datos => {
       this.listaInsumos = datos;
+      this.cdr.detectChanges();
     });
 
-    // 2. Cargamos los productos reales para tu menú desplegable
     this.inventarioService.getProductosMenu().subscribe(productos => {
       this.productosDisponibles = productos;
+      this.cdr.detectChanges();
     });
   }
 
@@ -52,7 +55,6 @@ export class InventarioComponent implements OnInit {
     this.nuevoInsumo = { producto_id: '', almacen: 'Principal', stock_actual: 0, stock_minimo: 0 };
   }
 
-  // 👈 MAGIA: La función que realmente guarda en la base de datos
   guardarInsumo() {
     if (!this.nuevoInsumo.producto_id) {
       alert('Por favor, selecciona un producto del menú.');
@@ -61,14 +63,33 @@ export class InventarioComponent implements OnInit {
 
     this.inventarioService.agregarInsumo(this.nuevoInsumo).subscribe({
       next: () => {
-        this.cerrarModal(); // Escondemos la ventana
-        this.cargarDatos(); // Refrescamos la tabla para ver el producto recién agregado
+        this.cerrarModal(); 
+        this.cargarDatos(); 
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error al guardar:', err);
         alert('Hubo un error al guardar en la base de datos.');
       }
     });
+  }
+
+  editarInsumo(item: ItemInventario) {
+    console.log('Editar insumo:', item);
+    alert(`Editar inventario de: ${item.productos?.nombre || 'Producto'}`);
+  }
+
+  eliminarInsumo(id: string) {
+    if (confirm('¿Estás seguro de eliminar este registro del inventario?')) {
+      this.inventarioService.eliminarInsumo(id).subscribe({
+        next: () => {
+          this.cargarDatos();
+        },
+        error: (err: any) => {
+          console.error('Error al eliminar:', err);
+          alert('No se pudo eliminar el registro.');
+        }
+      });
+    }
   }
 
   obtenerColorAlerta(actual: number, minimo: number): string {

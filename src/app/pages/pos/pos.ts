@@ -10,9 +10,12 @@ export interface Producto {
   nombre: string; 
   categoria: string; 
   precio: number; 
-  icono: string; 
+  icono?: string; 
   codigo_barras: string; 
   imagen_url?: string;
+  stock: number;         // 👈 Stock real desde inventario
+  descripcion?: string;  // 👈 Descripción para el modal
+  numero_parte?: string; // 👈 Num. parte para el modal
 }
 export interface ItemTicket { producto: Producto; cantidad: number; importe: number; }
 
@@ -42,21 +45,26 @@ export class PosComponent implements OnInit {
   nombreCajero: string = 'Cargando...'; 
   fechaTicket: Date = new Date();
 
-  // --- VARIABLES PARA EL MENÚ DE CATEGORÍAS ---
-  productosOriginales: Producto[] = []; // Respaldo del catálogo completo
-  categoriasSami = ['Todas', 'Hogar', 'Artesanía', 'Decoración', 'Alimentos', 'Vinatería', 'Ropa', 'Temporada'];
+  // --- VARIABLES PARA EL MENÚ Y MODAL ---
+  productosOriginales: Producto[] = []; 
+  categorias: string[] = ['Todas']; 
   categoriaSeleccionada = 'Todas';
   menuCategoriasAbierto = false;
+  productoSeleccionado: Producto | null = null; 
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.cargarFolioInicial(); // 👈 Cargamos el folio real de la BD al abrir
     this.cargarCatalogo();
     this.obtenerUsuarioActual();
   }
 
+  // Consultar el folio persistente desde Supabase
+  async cargarFolioInicial() {
+    this.numeroTicket = await this.ventaService.obtenerSiguienteFolio();
+    this.cdr.detectChanges();
+  }
+
   obtenerUsuarioActual() {
-    // Cuando Aylem tenga listo el AuthService con Supabase, pueden cambiar esto.
-    // Por ahora, simulamos que busca quién inició sesión.
-    // Si no hay nadie, por defecto dirá 'Sami'
     const correoGuardado = localStorage.getItem('sb-tuproyecto-auth-token') || 'Sami';
     
     if (correoGuardado !== 'Sami') {
@@ -73,7 +81,7 @@ export class PosComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Descargamos la mercancía real y creamos los botones dinámicamente
+  // Descargamos la mercancía real con su stock y categorías dinámicas
   async cargarCatalogo() {
     try {
       const catalogoBD: any = await this.productoService.getProductos();
@@ -84,18 +92,34 @@ export class PosComponent implements OnInit {
           nombre: p.nombre,
           categoria: p.categoria || 'Sin categoría', 
           precio: Number(p.precio_venta), 
-          imagen_url: p.imagen_url, // 👈 Reemplazamos icono: '🍔' por la URL real
-          codigo_barras: p.codigo_barras 
+          imagen_url: p.imagen_url,
+          codigo_barras: p.codigo_barras,
+          // Si el stock viene definido lo usamos, si es null le damos un valor base para evitar falsos agotados
+          stock: p.stock !== undefined && p.stock !== null ? Number(p.stock) : 15, 
+          descripcion: p.descripcion,            
+          numero_parte: p.numero_parte           
         }));
         
-        // ¡Guardamos la copia de seguridad para que el filtro funcione!
         this.productosOriginales = [...this.productos];
+        
+        const categoriasUnicas = new Set(this.productos.map(p => p.categoria));
+        this.categorias = ['Todas', ...Array.from(categoriasUnicas)];
         
         this.cdr.detectChanges(); 
       }
     } catch (error) {
       console.error('Error al descargar productos:', error);
     }
+  }
+
+  // --- FUNCIONES DEL MODAL DE DETALLES ---
+  abrirDetalles(producto: Producto, event: Event) {
+    event.stopPropagation(); 
+    this.productoSeleccionado = producto;
+  }
+
+  cerrarDetalles() {
+    this.productoSeleccionado = null;
   }
 
   // --- FUNCIONES DEL MENÚ DE CATEGORÍAS ---
@@ -118,6 +142,11 @@ export class PosComponent implements OnInit {
 
   // --- LÓGICA DE LA CAJA ---
   agregarAlTicket(producto: Producto) {
+    if (producto.stock <= 0) {
+      alert('❌ Este producto se encuentra AGOTADO en el inventario.');
+      return;
+    }
+
     const itemExistente = this.ticket.find(item => item.producto.id === producto.id);
     
     if (itemExistente) {
@@ -164,7 +193,6 @@ export class PosComponent implements OnInit {
 
     const terminoMinusculas = termino.toLowerCase();
 
-    // Ahora buscamos en el catálogo original para que encuentre productos aunque estés en otra categoría
     const productoEncontrado = this.productosOriginales.find(p =>
       (p.codigo_barras && p.codigo_barras === termino) || 
       p.nombre.toLowerCase().includes(terminoMinusculas)  
@@ -198,19 +226,14 @@ export class PosComponent implements OnInit {
       const resultado = await this.ventaService.crearVenta(nuevaVenta as any);
 
       if (resultado.success) {
-        // Actualizamos la fecha a la hora exacta del cobro
         this.fechaTicket = new Date();
         this.cdr.detectChanges();
 
-        // Mandamos a imprimir
         window.print();
-        
-        // Limpiamos la caja
         this.limpiarTicket(); 
         
-        // Sumamos 1 al número de ticket y rellenamos con ceros (00002)
-        const siguienteTicket = parseInt(this.numeroTicket) + 1;
-        this.numeroTicket = siguienteTicket.toString().padStart(5, '0');
+        // Actualizamos el número de ticket consultando el siguiente folio real
+        await this.cargarFolioInicial();
         
         this.cdr.detectChanges();
       } else {

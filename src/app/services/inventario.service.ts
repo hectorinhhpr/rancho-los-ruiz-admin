@@ -56,7 +56,8 @@ export class InventarioService {
         .eq('id', id)
     );
   }
-  // 👈 NUEVA: Trae los productos del menú para ponerlos en el desplegable
+
+  // Trae los productos del menú para ponerlos en el desplegable
   getProductosMenu(): Observable<any[]> {
     return from(
       this.supabase
@@ -71,12 +72,27 @@ export class InventarioService {
     );
   }
 
-  // 👈 NUEVA: Inserta el nuevo insumo en la tabla de inventario
+  // Inserta el nuevo insumo en la tabla de inventario
   agregarInsumo(nuevoInsumo: any): Observable<any> {
     return from(
       this.supabase
         .from('inventario')
         .insert([nuevoInsumo])
+    );
+  }
+
+  // Elimina un registro de inventario por su ID
+  eliminarInsumo(id: string): Observable<any> {
+    return from(
+      this.supabase
+        .from('inventario')
+        .delete()
+        .eq('id', id)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      })
     );
   }
 }

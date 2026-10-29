@@ -4,9 +4,9 @@
       <span>📦</span> Registrar Nuevo Producto
     </h2>
 
-    <form (ngSubmit)="guardar()" #form="ngForm" class="space-y-6">
+    <form (ngSubmit)="guardar()" class="space-y-6">
       
-      <!-- Escáner / Código de Barras -->
+      <!-- Código de Barras -->
       <div>
         <label class="block text-sm font-semibold text-stone-300 mb-2">Código de Barras (Dispara la pistola aquí)</label>
         <input 
@@ -19,20 +19,26 @@
         >
       </div>
 
-      <!-- Nombre y Categoría -->
+      <!-- Nombre y Categoría con Datalist (Seleccionar o Escribir nueva) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label class="block text-sm font-semibold text-stone-300 mb-2">Nombre del Producto *</label>
           <input type="text" name="nombre" [(ngModel)]="nuevoProducto.nombre" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
         </div>
         <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Categoría</label>
-          <input list="lista-categorias" name="categoria" [(ngModel)]="nuevoProducto.categoria" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white" placeholder="Ej. Navidad, Hogar...">
-          <datalist id="lista-categorias">
-            <option value="Alimentos"></option>
-            <option value="Bebidas"></option>
-            <option value="Hogar"></option>
-            <option value="Navidad"></option>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Categoría (Elige o escribe una nueva)</label>
+          <input 
+            type="text" 
+            name="categoria" 
+            [(ngModel)]="nuevoProducto.categoria" 
+            list="lista-sugerencias-categorias" 
+            placeholder="Ej. Navidad, Hogar..." 
+            class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white"
+          >
+          <datalist id="lista-sugerencias-categorias">
+            @for (cat of categoriasDisponibles; track cat) {
+              <option [value]="cat"></option>
+            }
           </datalist>
         </div>
       </div>

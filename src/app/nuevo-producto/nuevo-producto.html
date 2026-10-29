@@ -1,0 +1,84 @@
+<div class="min-h-screen bg-stone-900 text-stone-100 p-8 font-sans flex justify-center items-center">
+  <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-stone-700">
+    <h2 class="text-3xl font-bold text-emerald-400 mb-6 flex items-center gap-3">
+      <span>📦</span> Registrar Nuevo Producto
+    </h2>
+
+    <form (ngSubmit)="guardar()" #form="ngForm" class="space-y-6">
+      
+      <!-- Escáner / Código de Barras -->
+      <div>
+        <label class="block text-sm font-semibold text-stone-300 mb-2">Código de Barras (Dispara la pistola aquí)</label>
+        <input 
+          type="text" 
+          name="codigo"
+          [(ngModel)]="nuevoProducto.codigo_barras"
+          autofocus
+          placeholder="||||||||||||||||||" 
+          class="w-full bg-stone-900 text-emerald-300 px-4 py-4 rounded-xl border border-stone-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/50 outline-none transition text-2xl text-center tracking-[0.25em] font-mono"
+        >
+      </div>
+
+      <!-- Nombre y Categoría -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Nombre del Producto *</label>
+          <input type="text" name="nombre" [(ngModel)]="nuevoProducto.nombre" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Categoría</label>
+          <input list="lista-categorias" name="categoria" [(ngModel)]="nuevoProducto.categoria" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white" placeholder="Ej. Navidad, Hogar...">
+          <datalist id="lista-categorias">
+            <option value="Alimentos"></option>
+            <option value="Bebidas"></option>
+            <option value="Hogar"></option>
+            <option value="Navidad"></option>
+          </datalist>
+        </div>
+      </div>
+
+      <!-- Descripción y Número de Parte -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Descripción (Largo, color, luces)</label>
+          <input type="text" name="descripcion" [(ngModel)]="nuevoProducto.descripcion" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Número de Parte (CA)</label>
+          <input type="text" name="numero_parte" [(ngModel)]="nuevoProducto.numero_parte" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
+        </div>
+      </div>
+
+      <!-- Precio y Foto -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+        <div>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Precio de Venta ($) *</label>
+          <input type="number" name="precio" [(ngModel)]="nuevoProducto.precio_venta" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-emerald-400 font-bold text-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Fotografía</label>
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" class="w-full text-sm text-stone-400 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-900 file:text-emerald-300 hover:file:bg-emerald-800 transition cursor-pointer bg-stone-900 border border-stone-600 rounded-lg">
+        </div>
+      </div>
+
+      <!-- Vista Previa de la Imagen -->
+      @if (imagenPreview) {
+        <div class="mt-4 flex justify-center">
+          <img [src]="imagenPreview" alt="Vista previa" class="h-40 w-40 object-cover rounded-xl border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+        </div>
+      }
+
+      <!-- Botón de Guardar -->
+      <div class="pt-4">
+        <button type="submit" [disabled]="guardando" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-lg py-4 rounded-xl transition shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50 flex justify-center items-center gap-2">
+          @if (guardando) {
+            <span class="animate-spin text-xl">⏳</span> Guardando en Supabase...
+          } @else {
+            <span class="text-xl">💾</span> Registrar en el Catálogo
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

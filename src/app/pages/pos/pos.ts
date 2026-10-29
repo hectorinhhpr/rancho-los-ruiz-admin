@@ -12,6 +12,7 @@ export interface Producto {
   precio: number; 
   icono: string; 
   codigo_barras: string; 
+  imagen_url?: string;
 }
 export interface ItemTicket { producto: Producto; cantidad: number; importe: number; }
 
@@ -81,9 +82,9 @@ export class PosComponent implements OnInit {
         this.productos = catalogoBD.map((p: any) => ({
           id: p.id,
           nombre: p.nombre,
-          categoria: 'Restaurante', // Pronto Aylem cambiará esto desde Supabase
+          categoria: p.categoria || 'Sin categoría', 
           precio: Number(p.precio_venta), 
-          icono: '🍔',
+          imagen_url: p.imagen_url, // 👈 Reemplazamos icono: '🍔' por la URL real
           codigo_barras: p.codigo_barras 
         }));
         

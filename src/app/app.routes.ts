@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth-guard'; // Lo comentamos hasta que Karime suba este archivo
 import { adminGuard } from './guards/admin.guard'; // 👈 ¡NUEVO! Importamos a tu cadenero
+import { NuevoProductoComponent } from './nuevo-producto/nuevo-producto'; // 👈 Importamos tu nueva pantalla
 
 export const routes: Routes = [
   {
@@ -35,9 +36,16 @@ export const routes: Routes = [
     // Aquí NO ponemos el adminGuard porque el cajero sí debe entrar
   },
   {
-  path: 'inventario',
-  loadComponent: () => import('./pages/inventario/inventario').then(m => m.InventarioComponent),
-  canActivate: [adminGuard]
+    path: 'inventario',
+    loadComponent: () => import('./pages/inventario/inventario').then(m => m.InventarioComponent),
+    canActivate: [adminGuard]
+  },
+
+  // 👇 RUTA NUEVA: Alta de productos con escáner y foto 👇
+  {
+    path: 'nuevo-producto',
+    component: NuevoProductoComponent,
+    canActivate: [adminGuard] // Protegido: Solo la administradora puede agregar productos
   },
   
   {

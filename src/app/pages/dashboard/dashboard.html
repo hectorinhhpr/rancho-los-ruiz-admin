@@ -35,7 +35,7 @@
       <!-- Perfil de Usuario con Menú Desplegable -->
       <div class="relative">
         
-        <!-- Botón del perfil (ahora con el evento click) -->
+        <!-- Botón del perfil -->
         <div (click)="toggleMenuPerfil()" class="flex items-center gap-3 cursor-pointer group">
           <div class="text-right hidden sm:block">
             <p class="text-sm font-bold text-stone-800 group-hover:text-green-700 transition">Héctor Pacheco</p>
@@ -47,13 +47,13 @@
           </div>
         </div>
 
-        <!-- Menú Desplegable Flotante -->
+        <!-- Menú Desplegable Flotante Limpio -->
         @if (mostrarMenuPerfil) {
           <div class="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden z-50 transition-all">
             <div class="py-2">
-              <!-- Opción de Configuración corregida con routerLink directo -->
+              
               <button routerLink="/nuevo-producto" class="w-full text-left px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-100 flex items-center gap-3 transition">
-                <span>⚙️</span> Configuración
+                <span>➕</span> Nuevo Producto
               </button>
               
               <div class="h-px bg-stone-200 my-1"></div>

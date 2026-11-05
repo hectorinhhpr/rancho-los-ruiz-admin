@@ -5,27 +5,19 @@
     ☰
   </button>
 
-  <!-- Logo -->
-  <div class="p-6 border-b border-stone-700 overflow-hidden whitespace-nowrap">
+  <!-- Logo convertido en Botón Maestro de Inicio (Dashboard) -->
+  <a routerLink="/dashboard" class="block p-6 border-b border-stone-700 overflow-hidden whitespace-nowrap hover:bg-stone-800 transition cursor-pointer">
     @if (!colapsado) {
       <h2 class="text-2xl font-bold text-white tracking-wider">Los Ruiz</h2>
       <p class="text-xs text-stone-400 mt-1">Panel Administrativo</p>
     } @else {
       <h2 class="text-xl font-bold text-white text-center">LR</h2>
     }
-  </div>
+  </a>
 
   <!-- Navegación -->
   <nav class="flex-1 px-3 py-6 space-y-2 overflow-hidden">
     
-    <!-- DASHBOARD: Solo lo ve el Admin (Sami) -->
-    @if (rolActual === 'admin') {
-      <a routerLink="/dashboard" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
-        <span class="text-xl">📊</span>
-        @if (!colapsado) { <span class="font-medium">Dashboard</span> }
-      </a>
-    }
-
     <!-- PUNTO DE VENTA: Lo ven todos (Admin y Cajero) -->
     <a routerLink="/pos" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">
       <span class="text-xl">🛒</span>
@@ -39,6 +31,7 @@
         @if (!colapsado) { <span class="font-medium">Clientes</span> }
       </a>
     }
+    
     <!-- INVENTARIO: Solo lo ve el Admin (Sami) -->
     @if (rolActual === 'admin') {
       <a routerLink="/inventario" routerLinkActive="bg-green-700 text-white shadow-md" class="flex items-center gap-3 px-3 py-3 hover:bg-stone-800 hover:text-white rounded-lg transition cursor-pointer whitespace-nowrap">

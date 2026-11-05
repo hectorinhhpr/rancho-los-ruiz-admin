@@ -9,24 +9,23 @@ export class VentaService {
 
   constructor(private supabaseService: SupabaseService) {}
 
-  // NUEVO: Consultar el folio oficial desde la función que hizo Aylem en Supabase
+  // Consultar el folio oficial desde la función que hizo Aylem en Supabase
   async obtenerSiguienteFolio(): Promise<string> {
     try {
       const { data, error } = await this.supabaseService.client
-        .rpc('obtener_siguiente_folio'); // Llama a la función de la BD
+        .rpc('obtener_siguiente_folio'); 
 
       if (error) throw error;
 
-      // Si la base regresa un número, lo rellenamos con ceros (ej: 00002)
       const numero = data || 1;
       return numero.toString().padStart(5, '0');
     } catch (err: any) {
       console.error('Error al obtener el siguiente folio:', err.message);
-      return '00001'; // Fallback por seguridad
+      return '00001'; 
     }
   }
 
-  // Registrar una nueva venta completa (ticket + detalle de productos)
+  // Registrar venta y DESCONTAR STOCK
   async crearVenta(venta: Venta): Promise<{ success: boolean; folio?: string; error?: string }> {
     try {
       // 1. Insertar la venta principal
@@ -41,7 +40,7 @@ export class VentaService {
 
       if (ventaError) throw ventaError;
 
-      // 2. Mapear e insertar el detalle de productos vinculados al ID de la venta creada
+      // 2. Insertar el detalle de productos
       const detallesConVenta = venta.detalles.map((item) => ({
         id_venta: ventaData.id,
         id_producto: item.id_producto,
@@ -55,9 +54,29 @@ export class VentaService {
 
       if (detalleError) throw detalleError;
 
+      // 3. 👈 NUEVO: Descontar el stock de la base de datos
+      for (const item of venta.detalles) {
+        // Obtenemos cuánto stock hay actualmente
+        const { data: prodData } = await this.supabaseService.client
+          .from('productos')
+          .select('stock')
+          .eq('id', item.id_producto)
+          .single();
+
+        if (prodData && prodData.stock !== null) {
+          const nuevoStock = prodData.stock - item.cantidad;
+          
+          // Actualizamos el producto con su nuevo stock
+          await this.supabaseService.client
+            .from('productos')
+            .update({ stock: nuevoStock })
+            .eq('id', item.id_producto);
+        }
+      }
+
       return { success: true, folio: ventaData.folio };
     } catch (err: any) {
-      console.error('Error al registrar la venta:', err.message);
+      console.error('Error al registrar la venta y stock:', err.message);
       return { success: false, error: err.message };
     }
   }

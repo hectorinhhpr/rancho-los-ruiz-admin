@@ -13,9 +13,9 @@ export interface Producto {
   icono?: string; 
   codigo_barras: string; 
   imagen_url?: string;
-  stock: number;         // 👈 Stock real desde inventario
-  descripcion?: string;  // 👈 Descripción para el modal
-  numero_parte?: string; // 👈 Num. parte para el modal
+  stock: number;         
+  descripcion?: string;  
+  numero_parte?: string; 
 }
 export interface ItemTicket { producto: Producto; cantidad: number; importe: number; }
 
@@ -53,12 +53,11 @@ export class PosComponent implements OnInit {
   productoSeleccionado: Producto | null = null; 
 
   async ngOnInit() {
-    await this.cargarFolioInicial(); // 👈 Cargamos el folio real de la BD al abrir
+    await this.cargarFolioInicial(); 
     this.cargarCatalogo();
     this.obtenerUsuarioActual();
   }
 
-  // Consultar el folio persistente desde Supabase
   async cargarFolioInicial() {
     this.numeroTicket = await this.ventaService.obtenerSiguienteFolio();
     this.cdr.detectChanges();
@@ -81,7 +80,6 @@ export class PosComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Descargamos la mercancía real con su stock y categorías dinámicas
   async cargarCatalogo() {
     try {
       const catalogoBD: any = await this.productoService.getProductos();
@@ -94,8 +92,7 @@ export class PosComponent implements OnInit {
           precio: Number(p.precio_venta), 
           imagen_url: p.imagen_url,
           codigo_barras: p.codigo_barras,
-          // Si el stock viene definido lo usamos, si es null le damos un valor base para evitar falsos agotados
-          stock: p.stock !== undefined && p.stock !== null ? Number(p.stock) : 15, 
+          stock: p.stock !== undefined && p.stock !== null ? Number(p.stock) : 0, 
           descripcion: p.descripcion,            
           numero_parte: p.numero_parte           
         }));
@@ -112,7 +109,6 @@ export class PosComponent implements OnInit {
     }
   }
 
-  // --- FUNCIONES DEL MODAL DE DETALLES ---
   abrirDetalles(producto: Producto, event: Event) {
     event.stopPropagation(); 
     this.productoSeleccionado = producto;
@@ -122,7 +118,6 @@ export class PosComponent implements OnInit {
     this.productoSeleccionado = null;
   }
 
-  // --- FUNCIONES DEL MENÚ DE CATEGORÍAS ---
   toggleMenuCategorias() {
     this.menuCategoriasAbierto = !this.menuCategoriasAbierto;
   }
@@ -140,14 +135,21 @@ export class PosComponent implements OnInit {
     this.cdr.detectChanges(); 
   }
 
-  // --- LÓGICA DE LA CAJA ---
+  // --- LÓGICA DE LA CAJA (Validación estricta de stock) ---
   agregarAlTicket(producto: Producto) {
     if (producto.stock <= 0) {
-      alert('❌ Este producto se encuentra AGOTADO en el inventario.');
+      alert(`❌ El producto "${producto.nombre}" se encuentra AGOTADO.`);
       return;
     }
 
     const itemExistente = this.ticket.find(item => item.producto.id === producto.id);
+    const cantidadActualEnTicket = itemExistente ? itemExistente.cantidad : 0;
+
+    // Validamos que no intente agregar más de lo que hay físicamente en stock
+    if (cantidadActualEnTicket + 1 > producto.stock) {
+      alert(`⚠️ Stock insuficiente. Solo hay ${producto.stock} unidades disponibles de "${producto.nombre}".`);
+      return;
+    }
     
     if (itemExistente) {
       itemExistente.cantidad++; 
@@ -190,7 +192,6 @@ export class PosComponent implements OnInit {
 
   async buscarProducto(termino: string) {
     if (!termino || termino.trim() === '') return;
-
     const terminoMinusculas = termino.toLowerCase();
 
     const productoEncontrado = this.productosOriginales.find(p =>
@@ -232,8 +233,10 @@ export class PosComponent implements OnInit {
         window.print();
         this.limpiarTicket(); 
         
-        // Actualizamos el número de ticket consultando el siguiente folio real
         await this.cargarFolioInicial();
+        
+        // Recargamos el catálogo para refrescar el stock actualizado en pantalla
+        await this.cargarCatalogo();
         
         this.cdr.detectChanges();
       } else {

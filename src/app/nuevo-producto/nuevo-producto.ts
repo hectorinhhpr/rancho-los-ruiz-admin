@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { ProductoService } from '../services/producto'; 
@@ -23,22 +23,28 @@ export class NuevoProductoComponent implements OnInit {
   imagenPreview: string | ArrayBuffer | null = null;
   guardando = false;
 
-  // Lista de categorías sugeridas (se alimenta de lo que ya hay en la BD + predeterminadas)
+  listaProductos: any[] = []; // 👈 Guardará el catálogo completo
   categoriasDisponibles: string[] = ['Hogar', 'Alimentos', 'Bebidas', 'Navidad', 'Artesanías'];
 
-  constructor(private productoService: ProductoService) {}
+  constructor(
+    private productoService: ProductoService,
+    private cdr: ChangeDetectorRef // 👈 Para forzar la actualización de la tabla
+  ) {}
 
   async ngOnInit() {
-    await this.cargarCategoriasExistentes();
+    await this.cargarCatalogo();
   }
 
-  // Trae las categorías que ya se hayan registrado en Supabase para mostrarlas como sugerencia
-  async cargarCategoriasExistentes() {
+  // 👈 FUNCIÓN ACTUALIZADA: Trae los productos y extrae las categorías
+  async cargarCatalogo() {
     const productos = await this.productoService.getProductos();
     if (productos) {
+      this.listaProductos = productos; // Llenamos la tabla
+      
       const catsBD = productos.map((p: any) => p.categoria).filter((c: string) => c);
-      // Unimos las de la BD con las base sin repetir elementos
       this.categoriasDisponibles = Array.from(new Set([...this.categoriasDisponibles, ...catsBD]));
+      
+      this.cdr.detectChanges(); // Actualizamos la pantalla
     }
   }
 
@@ -85,7 +91,7 @@ export class NuevoProductoComponent implements OnInit {
       if (productoGuardado) { 
         alert('✅ ¡Producto guardado con éxito en Supabase!');
         this.limpiarFormulario();
-        await this.cargarCategoriasExistentes(); // Actualiza la lista si se creó una nueva
+        await this.cargarCatalogo(); // 👈 Actualiza la tabla automáticamente
       } else {
         alert('❌ Error al guardar. Es posible que el código de barras ya exista.');
       }
@@ -94,6 +100,15 @@ export class NuevoProductoComponent implements OnInit {
       alert('❌ Error de conexión con Supabase.');
     }
     this.guardando = false;
+  }
+
+  // 👈 NUEVA FUNCIÓN: Eliminar del Catálogo
+  async eliminarProducto(id: string, nombre: string) {
+    if (confirm(`¿Estás seguro de que deseas eliminar permanentemente "${nombre}" de tu menú?`)) {
+      await this.productoService.eliminarProducto(id);
+      // Ahora, como Supabase borra todo en cascada, solo le decimos a Angular que recargue la tabla
+      await this.cargarCatalogo(); 
+    }
   }
 
   limpiarFormulario() {

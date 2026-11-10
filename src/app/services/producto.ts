@@ -12,7 +12,7 @@ export class ProductoService {
   async getProductos(): Promise<any[] | null> {
     const { data, error } = await this.supabaseService.client
       .from('productos')
-      .select('*, inventario(stock_actual)'); // 👈 Relacionamos con inventario
+      .select('*, inventario(stock_actual)'); 
 
     if (error) {
       console.error('Error al descargar el catálogo:', error.message);
@@ -67,5 +67,19 @@ export class ProductoService {
       console.error('Error al subir la imagen:', err.message);
       return null;
     }
+  }
+
+  // 👈 NUEVA FUNCIÓN: Eliminar producto de la base de datos
+  async eliminarProducto(id: string): Promise<boolean> {
+    const { error } = await this.supabaseService.client
+      .from('productos')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al eliminar producto:', error.message);
+      return false;
+    }
+    return true;
   }
 }

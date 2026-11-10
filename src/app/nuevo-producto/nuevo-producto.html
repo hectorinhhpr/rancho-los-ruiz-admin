@@ -1,11 +1,12 @@
-<div class="min-h-screen bg-stone-900 text-stone-100 p-8 font-sans flex justify-center items-center">
-  <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-stone-700">
+<div class="min-h-screen bg-stone-900 text-stone-100 p-8 font-sans flex flex-col items-center gap-8">
+  
+  <!-- FORMULARIO: Registrar Nuevo Producto -->
+  <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-4xl border border-stone-700">
     <h2 class="text-3xl font-bold text-emerald-400 mb-6 flex items-center gap-3">
       <span>📦</span> Registrar Nuevo Producto
     </h2>
 
     <form (ngSubmit)="guardar()" class="space-y-6">
-      
       <!-- Código de Barras -->
       <div>
         <label class="block text-sm font-semibold text-stone-300 mb-2">Código de Barras (Dispara la pistola aquí)</label>
@@ -19,14 +20,14 @@
         >
       </div>
 
-      <!-- Nombre y Categoría con Datalist (Seleccionar o Escribir nueva) -->
+      <!-- Nombre y Categoría -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label class="block text-sm font-semibold text-stone-300 mb-2">Nombre del Producto *</label>
           <input type="text" name="nombre" [(ngModel)]="nuevoProducto.nombre" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
         </div>
         <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Categoría (Elige o escribe una nueva)</label>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Categoría</label>
           <input 
             type="text" 
             name="categoria" 
@@ -46,7 +47,7 @@
       <!-- Descripción y Número de Parte -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Descripción (Largo, color, luces)</label>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Descripción</label>
           <input type="text" name="descripcion" [(ngModel)]="nuevoProducto.descripcion" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
         </div>
         <div>
@@ -67,24 +68,62 @@
         </div>
       </div>
 
-      <!-- Vista Previa de la Imagen -->
       @if (imagenPreview) {
         <div class="mt-4 flex justify-center">
           <img [src]="imagenPreview" alt="Vista previa" class="h-40 w-40 object-cover rounded-xl border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
         </div>
       }
 
-      <!-- Botón de Guardar -->
       <div class="pt-4">
-        <button type="submit" [disabled]="guardando" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-lg py-4 rounded-xl transition shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50 flex justify-center items-center gap-2">
-          @if (guardando) {
-            <span class="animate-spin text-xl">⏳</span> Guardando en Supabase...
-          } @else {
-            <span class="text-xl">💾</span> Registrar en el Catálogo
-          }
+        <button type="submit" [disabled]="guardando" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-lg py-4 rounded-xl transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex justify-center items-center gap-2">
+          <span class="text-xl">💾</span> {{ guardando ? 'Guardando en Supabase...' : 'Registrar en el Catálogo' }}
         </button>
       </div>
-
     </form>
   </div>
+
+  <!-- 👈 NUEVA TABLA: GESTOR DE CATÁLOGO -->
+  <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-4xl border border-stone-700">
+    <h2 class="text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-3">
+      <span>📋</span> Catálogo Actual
+    </h2>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-stone-600 text-stone-400">
+            <th class="p-4">Foto</th>
+            <th class="p-4">Nombre</th>
+            <th class="p-4">Categoría</th>
+            <th class="p-4">Precio</th>
+            <th class="p-4 text-center">Eliminar</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (prod of listaProductos; track prod.id) {
+            <tr class="border-b border-stone-700 hover:bg-stone-700/50 transition">
+              <td class="p-4">
+                @if (prod.imagen_url) {
+                  <img [src]="prod.imagen_url" class="w-12 h-12 object-cover rounded-lg shadow-sm border border-stone-600">
+                } @else {
+                  <div class="w-12 h-12 bg-stone-900 rounded-lg border border-stone-700 flex items-center justify-center text-xl">📦</div>
+                }
+              </td>
+              <td class="p-4 font-bold text-stone-200">{{ prod.nombre }}</td>
+              <td class="p-4 text-stone-400">{{ prod.categoria }}</td>
+              <td class="p-4 text-emerald-400 font-bold">{{ prod.precio_venta | currency:'MXN' }}</td>
+              <td class="p-4 text-center">
+                <button (click)="eliminarProducto(prod.id, prod.nombre)" class="text-stone-400 hover:text-red-500 transition px-2 text-xl" title="Eliminar Producto">🗑️</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="p-8 text-center text-stone-500 font-medium">No hay productos registrados en el catálogo.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>

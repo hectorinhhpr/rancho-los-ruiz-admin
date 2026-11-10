@@ -38,10 +38,12 @@ export class PosComponent implements OnInit {
   subtotal: number = 0;
   iva: number = 0;
   total: number = 0;
-  ticketsPausados: ItemTicket[][] = [];
+  
+  // 👈 MODIFICADO: Ahora almacena los objetos complejos que vienen de la nube
+  ticketsPausados: any[] = [];
 
   // --- VARIABLES PARA EL TICKET ESTÉTICO ---
-  numeroTicket: string = '00001'; 
+  numeroTicket: string = 'Cargando...'; 
   nombreCajero: string = 'Cargando...'; 
   fechaTicket: Date = new Date();
 
@@ -56,10 +58,17 @@ export class PosComponent implements OnInit {
     await this.cargarFolioInicial(); 
     this.cargarCatalogo();
     this.obtenerUsuarioActual();
+    await this.cargarTicketsPausados(); // 👈 NUEVO: Descarga tickets pendientes al abrir la caja
   }
 
   async cargarFolioInicial() {
     this.numeroTicket = await this.ventaService.obtenerSiguienteFolio();
+    this.cdr.detectChanges();
+  }
+
+  // 👈 NUEVO: Función para mantener sincronizados los tickets pausados
+  async cargarTicketsPausados() {
+    this.ticketsPausados = await this.ventaService.obtenerTicketsPausados();
     this.cdr.detectChanges();
   }
 
@@ -135,7 +144,7 @@ export class PosComponent implements OnInit {
     this.cdr.detectChanges(); 
   }
 
-  // --- LÓGICA DE LA CAJA (Validación estricta de stock) ---
+  // --- LÓGICA DE LA CAJA ---
   agregarAlTicket(producto: Producto) {
     if (producto.stock <= 0) {
       alert(`❌ El producto "${producto.nombre}" se encuentra AGOTADO.`);
@@ -145,7 +154,6 @@ export class PosComponent implements OnInit {
     const itemExistente = this.ticket.find(item => item.producto.id === producto.id);
     const cantidadActualEnTicket = itemExistente ? itemExistente.cantidad : 0;
 
-    // Validamos que no intente agregar más de lo que hay físicamente en stock
     if (cantidadActualEnTicket + 1 > producto.stock) {
       alert(`⚠️ Stock insuficiente. Solo hay ${producto.stock} unidades disponibles de "${producto.nombre}".`);
       return;
@@ -173,20 +181,36 @@ export class PosComponent implements OnInit {
     this.calcularTotales();
   }
 
-  pausarTicket() {
+  // 👈 MODIFICADO: Ahora envía el ticket a la nube
+  async pausarTicket() {
     if (this.ticket.length > 0) {
-      this.ticketsPausados.push([...this.ticket]); 
-      this.limpiarTicket();
+      const guardado = await this.ventaService.pausarTicketNube(this.nombreCajero, this.ticket);
+      if (guardado) {
+        this.limpiarTicket();
+        await this.cargarTicketsPausados(); // Refrescamos la lista visible
+      } else {
+        alert('❌ Error al conectar con Supabase. El ticket no se pudo pausar.');
+      }
     }
   }
 
-  recuperarTicket(index: number) {
+  // 👈 MODIFICADO: Descarga el ticket de la nube y lo elimina para no duplicar
+  async recuperarTicket(index: number) {
     if (this.ticket.length > 0) {
       alert('⚠️ Por favor cobra o cancela la orden actual antes de recuperar una pausada.');
       return;
     }
-    this.ticket = this.ticketsPausados[index];
-    this.ticketsPausados.splice(index, 1);
+    
+    const ticketRecuperado = this.ticketsPausados[index];
+    
+    // Pasamos los productos JSON a la memoria de la caja
+    this.ticket = ticketRecuperado.productos; 
+    
+    // Eliminamos el ticket de la nube para que otro cajero no lo descargue por error
+    await this.ventaService.eliminarTicketPausado(ticketRecuperado.id);
+    
+    // Refrescamos los datos
+    await this.cargarTicketsPausados();
     this.calcularTotales();
   }
 
@@ -234,8 +258,6 @@ export class PosComponent implements OnInit {
         this.limpiarTicket(); 
         
         await this.cargarFolioInicial();
-        
-        // Recargamos el catálogo para refrescar el stock actualizado en pantalla
         await this.cargarCatalogo();
         
         this.cdr.detectChanges();

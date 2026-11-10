@@ -44,19 +44,6 @@ export class InventarioService {
     );
   }
 
-  // Actualizar el stock de un ítem
-  actualizarStock(id: string, nuevoStock: number): Observable<any> {
-    return from(
-      this.supabase
-        .from('inventario')
-        .update({ 
-          stock_actual: nuevoStock,
-          fecha_actualizacion: new Date().toISOString()
-        })
-        .eq('id', id)
-    );
-  }
-
   // Trae los productos del menú para ponerlos en el desplegable
   getProductosMenu(): Observable<any[]> {
     return from(
@@ -78,6 +65,37 @@ export class InventarioService {
       this.supabase
         .from('inventario')
         .insert([nuevoInsumo])
+    );
+  }
+
+  // 👈 NUEVA FUNCIÓN: Actualiza todos los datos del modal (stock, almacén, etc.)
+  actualizarInsumo(id: string, datosActualizados: any): Observable<any> {
+    return from(
+      this.supabase
+        .from('inventario')
+        .update({ 
+          ...datosActualizados,
+          fecha_actualizacion: new Date().toISOString() 
+        })
+        .eq('id', id)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      })
+    );
+  }
+
+  // Actualizar solo el stock de un ítem (utilizado en el punto de venta u otros módulos rápidos)
+  actualizarStock(id: string, nuevoStock: number): Observable<any> {
+    return from(
+      this.supabase
+        .from('inventario')
+        .update({ 
+          stock_actual: nuevoStock,
+          fecha_actualizacion: new Date().toISOString()
+        })
+        .eq('id', id)
     );
   }
 

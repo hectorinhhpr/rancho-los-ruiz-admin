@@ -14,6 +14,8 @@ export class InventarioComponent implements OnInit {
   filtroEstado = 'Todos';
   terminoBusqueda = '';
   mostrarModal = false;
+  editando = false; // 👈 NUEVA BANDERA: Para saber si estamos editando
+  insumoIdEditando: string | null = null; // 👈 Guardar el ID del insumo a editar
 
   listaInsumos: ItemInventario[] = []; 
   productosDisponibles: any[] = []; 
@@ -47,11 +49,16 @@ export class InventarioComponent implements OnInit {
   }
 
   abrirModal() {
+    this.editando = false;
+    this.insumoIdEditando = null;
+    this.nuevoInsumo = { producto_id: '', almacen: 'Principal', stock_actual: 0, stock_minimo: 0 };
     this.mostrarModal = true;
   }
 
   cerrarModal() {
     this.mostrarModal = false;
+    this.editando = false;
+    this.insumoIdEditando = null;
     this.nuevoInsumo = { producto_id: '', almacen: 'Principal', stock_actual: 0, stock_minimo: 0 };
   }
 
@@ -61,37 +68,66 @@ export class InventarioComponent implements OnInit {
       return;
     }
 
-    this.inventarioService.agregarInsumo(this.nuevoInsumo).subscribe({
-      next: () => {
-        this.cerrarModal(); 
-        this.cargarDatos(); 
-      },
-      error: (err: any) => {
-        console.error('Error al guardar:', err);
-        alert('Hubo un error al guardar en la base de datos.');
-      }
-    });
-  }
-
-  editarInsumo(item: ItemInventario) {
-    console.log('Editar insumo:', item);
-    alert(`Editar inventario de: ${item.productos?.nombre || 'Producto'}`);
-  }
-
-  eliminarInsumo(id: string) {
-    if (confirm('¿Estás seguro de eliminar este registro del inventario?')) {
-      this.inventarioService.eliminarInsumo(id).subscribe({
+    if (this.editando && this.insumoIdEditando) {
+      // 👈 LÓGICA DE ACTUALIZACIÓN
+      this.inventarioService.actualizarInsumo(this.insumoIdEditando, this.nuevoInsumo).subscribe({
         next: () => {
-          this.cargarDatos();
+          this.cerrarModal(); 
+          this.cargarDatos(); 
         },
         error: (err: any) => {
-          console.error('Error al eliminar:', err);
-          alert('No se pudo eliminar el registro.');
+          console.error('Error al actualizar:', err);
+          alert('Hubo un error al actualizar el inventario.');
+        }
+      });
+    } else {
+      // 👈 LÓGICA DE INSERCIÓN NUEVA
+      this.inventarioService.agregarInsumo(this.nuevoInsumo).subscribe({
+        next: () => {
+          this.cerrarModal(); 
+          this.cargarDatos(); 
+        },
+        error: (err: any) => {
+          console.error('Error al guardar:', err);
+          alert('Hubo un error al guardar en la base de datos.');
         }
       });
     }
   }
 
+  // 👈 NUEVA FUNCIÓN: Abrir modal con datos llenos
+  editarInsumo(item: ItemInventario) {
+    if (!item.id) return;
+    this.editando = true;
+    this.insumoIdEditando = item.id;
+    this.nuevoInsumo = {
+      producto_id: item.producto_id,
+      almacen: item.almacen,
+      stock_actual: item.stock_actual,
+      stock_minimo: item.stock_minimo
+    };
+    this.mostrarModal = true;
+  }
+
+  eliminarInsumo(id: string | undefined) {
+    if (!id) {
+      alert('Error: No se encontró el ID de este producto.');
+      return;
+    }
+
+    if (confirm('¿Estás seguro de eliminar este registro del inventario?')) {
+      this.inventarioService.eliminarInsumo(id).subscribe({
+        next: () => {
+          this.cargarDatos(); 
+        },
+        error: (err: any) => {
+          console.error('Error al eliminar:', err);
+          alert('No se pudo eliminar el registro de la base de datos.');
+        }
+      });
+    }
+  }
+  
   obtenerColorAlerta(actual: number, minimo: number): string {
     if (actual <= minimo / 2) return 'bg-red-100 text-red-700';
     if (actual <= minimo) return 'bg-yellow-100 text-yellow-700';

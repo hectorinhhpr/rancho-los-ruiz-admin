@@ -8,7 +8,6 @@ export class ProductoService {
 
   constructor(private supabaseService: SupabaseService) {}
 
-  // Obtener todos los productos junto con su stock real de la tabla de inventario
   async getProductos(): Promise<any[] | null> {
     const { data, error } = await this.supabaseService.client
       .from('productos')
@@ -19,7 +18,6 @@ export class ProductoService {
       return null;
     }
 
-    // Mapeamos el stock sumando los almacenes o dejando 0 si no se ha dado de alta
     const productosConStock = data.map((p: any) => {
       const stockTotal = p.inventario && p.inventario.length > 0 
         ? p.inventario.reduce((acc: number, curr: any) => acc + (curr.stock_actual || 0), 0)
@@ -34,7 +32,6 @@ export class ProductoService {
     return productosConStock;
   }
 
-  // Registrar un nuevo producto en el catálogo
   async crearProducto(producto: any): Promise<boolean> {
     const { error } = await this.supabaseService.client
       .from('productos')
@@ -47,7 +44,6 @@ export class ProductoService {
     return true;
   }
 
-  // Subir imagen al Storage de Supabase
   async subirImagenProducto(file: File): Promise<string | null> {
     try {
       const fileName = `${Date.now()}_${file.name}`;
@@ -57,7 +53,6 @@ export class ProductoService {
 
       if (error) throw error;
 
-      // Obtener la URL pública de la imagen
       const { data: publicURLData } = this.supabaseService.client.storage
         .from('productos_imagenes')
         .getPublicUrl(data.path);
@@ -69,7 +64,6 @@ export class ProductoService {
     }
   }
 
-  // 👈 NUEVA FUNCIÓN: Eliminar producto de la base de datos
   async eliminarProducto(id: string): Promise<boolean> {
     const { error } = await this.supabaseService.client
       .from('productos')
@@ -78,6 +72,20 @@ export class ProductoService {
 
     if (error) {
       console.error('Error al eliminar producto:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  // 👈 NUEVA FUNCIÓN: Actualizar producto existente
+  async actualizarProducto(id: string, datosActualizados: any): Promise<boolean> {
+    const { error } = await this.supabaseService.client
+      .from('productos')
+      .update(datosActualizados)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al actualizar producto:', error.message);
       return false;
     }
     return true;

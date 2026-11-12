@@ -14,7 +14,13 @@ export class Dashboard {
   modulos = [
     { nombre: 'Punto de Venta', icono: '🛒', ruta: '/pos', colorTexto: 'text-green-600', colorFondo: 'bg-green-100' },
     { nombre: 'Clientes', icono: '👥', ruta: '/clientes', colorTexto: 'text-blue-600', colorFondo: 'bg-blue-100' },
-    { nombre: 'Reservaciones', icono: '📅', ruta: '/reservaciones', colorTexto: 'text-purple-600', colorFondo: 'bg-purple-100' }, // 👈 Corregido a /reservaciones
+    {
+      nombre: 'Apartados', 
+      icono: '📅', 
+      ruta: '/reservaciones', // Dejamos la ruta igual para no romper Angular
+      colorFondo: 'bg-purple-100', // Puedes cambiar el color si gustas
+      colorTexto: 'text-purple-600'
+    }, // 👈 Corregido a /reservaciones
     { nombre: 'Inventario', icono: '📦', ruta: '/inventario', colorTexto: 'text-orange-600', colorFondo: 'bg-orange-100' },
     { nombre: 'Reportes', icono: '📊', ruta: '/dashboard', colorTexto: 'text-red-600', colorFondo: 'bg-red-100' }
   ];

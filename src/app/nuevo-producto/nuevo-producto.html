@@ -1,129 +1,179 @@
-<div class="min-h-screen bg-stone-900 text-stone-100 p-8 font-sans flex flex-col items-center gap-8">
+<div class="min-h-screen bg-stone-900 text-stone-100 p-8 font-sans flex flex-col items-center gap-6 relative">
   
-  <!-- FORMULARIO: Registrar Nuevo Producto -->
-  <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-4xl border border-stone-700">
-    <h2 class="text-3xl font-bold text-emerald-400 mb-6 flex items-center gap-3">
+  <!-- BOTONERA DE PESTAÑAS -->
+  <div class="bg-stone-800 p-2 rounded-2xl flex gap-2 w-full max-w-5xl border border-stone-700 shadow-lg">
+    <button 
+      (click)="cambiarSeccion('registro')" 
+      [ngClass]="seccionActiva === 'registro' ? 'bg-emerald-600 text-white shadow-md' : 'text-stone-400 hover:bg-stone-700 hover:text-stone-200'" 
+      class="flex-1 py-4 font-bold rounded-xl transition-all duration-200 flex justify-center items-center gap-2 text-lg">
       <span>📦</span> Registrar Nuevo Producto
-    </h2>
-
-    <form (ngSubmit)="guardar()" class="space-y-6">
-      <!-- Código de Barras -->
-      <div>
-        <label class="block text-sm font-semibold text-stone-300 mb-2">Código de Barras (Dispara la pistola aquí)</label>
-        <input 
-          type="text" 
-          name="codigo"
-          [(ngModel)]="nuevoProducto.codigo_barras"
-          autofocus
-          placeholder="||||||||||||||||||" 
-          class="w-full bg-stone-900 text-emerald-300 px-4 py-4 rounded-xl border border-stone-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/50 outline-none transition text-2xl text-center tracking-[0.25em] font-mono"
-        >
-      </div>
-
-      <!-- Nombre y Categoría -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Nombre del Producto *</label>
-          <input type="text" name="nombre" [(ngModel)]="nuevoProducto.nombre" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Categoría</label>
-          <input 
-            type="text" 
-            name="categoria" 
-            [(ngModel)]="nuevoProducto.categoria" 
-            list="lista-sugerencias-categorias" 
-            placeholder="Ej. Navidad, Hogar..." 
-            class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white"
-          >
-          <datalist id="lista-sugerencias-categorias">
-            @for (cat of categoriasDisponibles; track cat) {
-              <option [value]="cat"></option>
-            }
-          </datalist>
-        </div>
-      </div>
-
-      <!-- Descripción y Número de Parte -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Descripción</label>
-          <input type="text" name="descripcion" [(ngModel)]="nuevoProducto.descripcion" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Número de Parte (CA)</label>
-          <input type="text" name="numero_parte" [(ngModel)]="nuevoProducto.numero_parte" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-white">
-        </div>
-      </div>
-
-      <!-- Precio y Foto -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-        <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Precio de Venta ($) *</label>
-          <input type="number" name="precio" [(ngModel)]="nuevoProducto.precio_venta" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none text-emerald-400 font-bold text-lg">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-stone-300 mb-2">Fotografía</label>
-          <input type="file" accept="image/*" (change)="onFileSelected($event)" class="w-full text-sm text-stone-400 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-900 file:text-emerald-300 hover:file:bg-emerald-800 transition cursor-pointer bg-stone-900 border border-stone-600 rounded-lg">
-        </div>
-      </div>
-
-      @if (imagenPreview) {
-        <div class="mt-4 flex justify-center">
-          <img [src]="imagenPreview" alt="Vista previa" class="h-40 w-40 object-cover rounded-xl border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-        </div>
-      }
-
-      <div class="pt-4">
-        <button type="submit" [disabled]="guardando" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-lg py-4 rounded-xl transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex justify-center items-center gap-2">
-          <span class="text-xl">💾</span> {{ guardando ? 'Guardando en Supabase...' : 'Registrar en el Catálogo' }}
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- 👈 NUEVA TABLA: GESTOR DE CATÁLOGO -->
-  <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-4xl border border-stone-700">
-    <h2 class="text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-3">
+    </button>
+    <button 
+      (click)="cambiarSeccion('catalogo')" 
+      [ngClass]="seccionActiva === 'catalogo' ? 'bg-emerald-600 text-white shadow-md' : 'text-stone-400 hover:bg-stone-700 hover:text-stone-200'" 
+      class="flex-1 py-4 font-bold rounded-xl transition-all duration-200 flex justify-center items-center gap-2 text-lg">
       <span>📋</span> Catálogo Actual
-    </h2>
-    
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse text-sm">
-        <thead>
-          <tr class="border-b border-stone-600 text-stone-400">
-            <th class="p-4">Foto</th>
-            <th class="p-4">Nombre</th>
-            <th class="p-4">Categoría</th>
-            <th class="p-4">Precio</th>
-            <th class="p-4 text-center">Eliminar</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (prod of listaProductos; track prod.id) {
-            <tr class="border-b border-stone-700 hover:bg-stone-700/50 transition">
-              <td class="p-4">
-                @if (prod.imagen_url) {
-                  <img [src]="prod.imagen_url" class="w-12 h-12 object-cover rounded-lg shadow-sm border border-stone-600">
-                } @else {
-                  <div class="w-12 h-12 bg-stone-900 rounded-lg border border-stone-700 flex items-center justify-center text-xl">📦</div>
-                }
-              </td>
-              <td class="p-4 font-bold text-stone-200">{{ prod.nombre }}</td>
-              <td class="p-4 text-stone-400">{{ prod.categoria }}</td>
-              <td class="p-4 text-emerald-400 font-bold">{{ prod.precio_venta | currency:'MXN' }}</td>
-              <td class="p-4 text-center">
-                <button (click)="eliminarProducto(prod.id, prod.nombre)" class="text-stone-400 hover:text-red-500 transition px-2 text-xl" title="Eliminar Producto">🗑️</button>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" class="p-8 text-center text-stone-500 font-medium">No hay productos registrados en el catálogo.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+    </button>
   </div>
 
+  <!-- PESTAÑA 1: FORMULARIO DE REGISTRO -->
+  @if (seccionActiva === 'registro') {
+    <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-5xl border border-stone-700 animate-fade-in-up">
+      <h2 class="text-3xl font-bold text-emerald-400 mb-6">Registrar Nuevo Producto</h2>
+
+      <form (ngSubmit)="guardar()" class="space-y-6">
+        <div>
+          <label class="block text-sm font-semibold text-stone-300 mb-2">Código de Barras</label>
+          <input type="text" name="codigo" [(ngModel)]="nuevoProducto.codigo_barras" autofocus placeholder="||||||||||||||||||" class="w-full bg-stone-900 text-emerald-300 px-4 py-4 rounded-xl border border-stone-600 focus:border-emerald-500 outline-none text-2xl text-center tracking-[0.25em] font-mono">
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-stone-300 mb-2">Nombre del Producto *</label>
+            <input type="text" name="nombre" [(ngModel)]="nuevoProducto.nombre" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-white focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-300 mb-2">Categoría</label>
+            <input type="text" name="categoria" [(ngModel)]="nuevoProducto.categoria" list="sug-cat" placeholder="Ej. Navidad..." class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-white focus:border-emerald-500">
+            <datalist id="sug-cat">
+              @for (cat of categoriasDisponibles; track cat) { <option [value]="cat"></option> }
+            </datalist>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-stone-300 mb-2">Descripción</label>
+            <input type="text" name="descripcion" [(ngModel)]="nuevoProducto.descripcion" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-white focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-300 mb-2">Número de Parte (CA)</label>
+            <input type="text" name="numero_parte" [(ngModel)]="nuevoProducto.numero_parte" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-white focus:border-emerald-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+          <div>
+            <label class="block text-sm font-semibold text-stone-300 mb-2">Precio de Venta ($) *</label>
+            <input type="number" name="precio" [(ngModel)]="nuevoProducto.precio_venta" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-emerald-400 font-bold text-lg focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-300 mb-2">Fotografía</label>
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" class="w-full text-sm text-stone-400 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-900 file:text-emerald-300 hover:file:bg-emerald-800 transition cursor-pointer bg-stone-900 border border-stone-600 rounded-lg">
+          </div>
+        </div>
+        @if (imagenPreview) {
+          <div class="mt-4 flex justify-center">
+            <img [src]="imagenPreview" alt="Preview" class="h-40 w-40 object-cover rounded-xl border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+          </div>
+        }
+        <div class="pt-4">
+          <button type="submit" [disabled]="guardando" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-lg py-4 rounded-xl transition shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+            {{ guardando ? 'Guardando...' : '💾 Registrar Producto' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- PESTAÑA 2: GESTOR DE CATÁLOGO -->
+  @if (seccionActiva === 'catalogo') {
+    <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-5xl border border-stone-700 animate-fade-in-up">
+      <h2 class="text-3xl font-bold text-emerald-400 mb-6 flex justify-between items-center">
+        Menú Registrado
+        <span class="text-sm font-medium bg-stone-700 text-stone-300 px-4 py-2 rounded-full">{{ listaProductos.length }} artículos</span>
+      </h2>
+      
+      <div class="overflow-x-auto rounded-xl border border-stone-600">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-stone-900 text-stone-400 border-b border-stone-600">
+              <th class="p-4">Foto</th>
+              <th class="p-4">Nombre</th>
+              <th class="p-4">Categoría</th>
+              <th class="p-4">Precio</th>
+              <th class="p-4 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (prod of listaProductos; track prod.id) {
+              <tr class="border-b border-stone-700 hover:bg-stone-700/50 transition bg-stone-800">
+                <td class="p-4">
+                  @if (prod.imagen_url) {
+                    <img [src]="prod.imagen_url" class="w-12 h-12 object-cover rounded-lg shadow-sm border border-stone-600">
+                  } @else {
+                    <div class="w-12 h-12 bg-stone-900 rounded-lg border border-stone-700 flex items-center justify-center text-xl">📦</div>
+                  }
+                </td>
+                <td class="p-4 font-bold text-stone-200">{{ prod.nombre }}</td>
+                <td class="p-4 text-stone-400"><span class="bg-stone-900 px-2 py-1 rounded border border-stone-700">{{ prod.categoria }}</span></td>
+                <td class="p-4 text-emerald-400 font-bold">{{ prod.precio_venta | currency:'MXN' }}</td>
+                <td class="p-4 text-center">
+                  <div class="flex justify-center gap-2">
+                    <!-- BOTÓN EDITAR -->
+                    <button (click)="abrirEdicion(prod)" class="bg-stone-700 hover:bg-blue-600 text-stone-300 hover:text-white transition p-2 rounded-lg" title="Editar">
+                      ✏️
+                    </button>
+                    <!-- BOTÓN ELIMINAR -->
+                    <button (click)="eliminarProducto(prod.id, prod.nombre)" class="bg-stone-700 hover:bg-red-600 text-stone-300 hover:text-white transition p-2 rounded-lg" title="Eliminar">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="p-8 text-center text-stone-500 font-medium">No hay productos.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL DE EDICIÓN FLOTANTE -->
+  @if (productoEnEdicion) {
+    <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div class="bg-stone-800 p-8 rounded-2xl shadow-2xl w-full max-w-3xl border border-emerald-600 overflow-y-auto max-h-[90vh]">
+        <h2 class="text-2xl font-bold text-emerald-400 mb-6 flex justify-between items-center">
+          ✏️ Editar Producto
+          <button (click)="cerrarEdicion()" class="text-stone-400 hover:text-white text-3xl">&times;</button>
+        </h2>
+
+        <form (ngSubmit)="guardarEdicion()" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-stone-300 mb-2">Nombre</label>
+              <input type="text" name="editNombre" [(ngModel)]="productoEnEdicion.nombre" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-white focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-stone-300 mb-2">Precio ($)</label>
+              <input type="number" name="editPrecio" [(ngModel)]="productoEnEdicion.precio_venta" required class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-emerald-400 font-bold focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-stone-300 mb-2">Código de Barras</label>
+              <input type="text" name="editCB" [(ngModel)]="productoEnEdicion.codigo_barras" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-white focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-stone-300 mb-2">Categoría</label>
+              <input type="text" name="editCat" [(ngModel)]="productoEnEdicion.categoria" class="w-full bg-stone-900 border border-stone-600 rounded-lg px-4 py-3 outline-none text-white focus:border-emerald-500">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-stone-300 mb-2">Actualizar Fotografía (Opcional)</label>
+              <input type="file" accept="image/*" (change)="onEditFileSelected($event)" class="w-full text-sm text-stone-400 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-900 file:text-emerald-300 hover:file:bg-emerald-800 transition cursor-pointer bg-stone-900 border border-stone-600 rounded-lg">
+            </div>
+          </div>
+
+          @if (imagenEdicionPreview) {
+            <div class="mt-4 flex justify-center">
+              <img [src]="imagenEdicionPreview" class="h-32 w-32 object-cover rounded-xl border-2 border-emerald-500">
+            </div>
+          }
+
+          <div class="pt-6 flex gap-4">
+            <button type="button" (click)="cerrarEdicion()" class="flex-1 bg-stone-700 hover:bg-stone-600 text-white font-bold py-3 rounded-xl transition">Cancelar</button>
+            <button type="submit" [disabled]="guardandoEdicion" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold py-3 rounded-xl transition">
+              {{ guardandoEdicion ? 'Actualizando...' : 'Guardar Cambios' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
 </div>

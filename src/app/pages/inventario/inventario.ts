@@ -108,25 +108,6 @@ export class InventarioComponent implements OnInit {
     };
     this.mostrarModal = true;
   }
-
-  eliminarInsumo(id: string | undefined) {
-    if (!id) {
-      alert('Error: No se encontró el ID de este producto.');
-      return;
-    }
-
-    if (confirm('¿Estás seguro de eliminar este registro del inventario?')) {
-      this.inventarioService.eliminarInsumo(id).subscribe({
-        next: () => {
-          this.cargarDatos(); 
-        },
-        error: (err: any) => {
-          console.error('Error al eliminar:', err);
-          alert('No se pudo eliminar el registro de la base de datos.');
-        }
-      });
-    }
-  }
   
   obtenerColorAlerta(actual: number, minimo: number): string {
     if (actual <= minimo / 2) return 'bg-red-100 text-red-700';
